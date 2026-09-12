@@ -31,9 +31,12 @@
 
     <div id="imageDrop" class="dropzone hidden">
       <input type="file" id="imageInput" accept="image/*" />
-      <p class="hint">Screenshot OCR isn't wired up in tonight's demo build \u2014 paste the post's text instead for now.</p>
+      <p class="hint">Screenshot OCR isn't wired up in this build \u2014 paste the post's text instead for now.</p>
       <img id="imagePreview" class="hidden" alt="Screenshot preview" />
     </div>
+
+    <label class="field-label" for="sourceLinkInput" style="margin-top:8px;">Source link (optional)</label>
+    <input type="url" id="sourceLinkInput" placeholder="Paste the Facebook post URL to revisit it later" />
 
     <button id="runBtn" class="primary-btn">Translate &amp; extract</button>
     <p id="runStatus" class="status"></p>

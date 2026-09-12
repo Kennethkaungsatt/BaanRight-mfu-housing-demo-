@@ -1,9 +1,6 @@
 const MYMEMORY_URL = "https://api.mymemory.translated.net/get";
-const NOMINATIM_URL = "https://nominatim.openstreetmap.org/search";
-const MFU_COORDS = { lat: 20.0432, lng: 99.8925 }; // Mae Fah Luang University, Chiang Rai
+const MFU_COORDS = { lat: 20.0432, lng: 99.8925 };
 
-// Landmarks your team already knows are common near listings.
-// Add more here as your team scouts more posts — no code changes needed elsewhere.
 const LANDMARKS = [
   { keywords: ["ฟ้าไทย", "fah thai", "ตลาดฟ้าไทย"], name: "Fah Thai market area", approxNote: "~5\u20138 min / 3\u20133.5 km from MFU (typical for this area)" }
 ];
@@ -20,7 +17,8 @@ const els = {};
 document.querySelectorAll("[id]").forEach((el) => (els[el.id] = el));
 
 let currentMode = "text";
-let lastResult = null; // { translatedText, price, deposit, location, phone, availability, distanceText }
+let lastResult = null;
+let expandedSavedId = null; // tracks which saved item currently has details open
 
 init();
 
@@ -74,7 +72,7 @@ function bindModeButtons() {
   });
 }
 
-// ---------- Translation (MyMemory, chunked for long posts) ----------
+// ---------- Translation ----------
 async function translateChunk(text, sourceLang, targetLang) {
   const params = new URLSearchParams({ q: text, langpair: `${sourceLang}|${targetLang}` });
   const res = await fetch(`${MYMEMORY_URL}?${params.toString()}`);
@@ -111,7 +109,7 @@ async function translateLong(text, sourceLang, targetLang) {
   return results.join(" ");
 }
 
-// ---------- Field extraction (rule-based, runs on original Thai text) ----------
+// ---------- Field extraction ----------
 function extractPrice(text) {
   let m = text.match(/ค่าเช่า[:\s]*([\d,]{3,})\s*(บาท)?/);
   if (m) return `${m[1]} THB/month`;
@@ -155,7 +153,7 @@ function extractAvailability(text) {
   return null;
 }
 
-// ---------- Distance detection (priority: maps link > stated time > landmark match) ----------
+// ---------- Distance detection ----------
 function detectDistance(text) {
   const linkMatch = text.match(/https?:\/\/(?:maps\.app\.goo\.gl|g\.co\/kgs|goo\.gl\/maps|www\.google\.com\/maps)\S+/i);
   const kmNear = text.match(/([\d.]+)\s*(?:กม\.?|km)/i);
@@ -190,7 +188,7 @@ async function runExtraction() {
     return;
   }
   if (currentMode === "image") {
-    showStatus(els.runStatus, "Screenshot OCR isn't in tonight's build \u2014 switch to Paste text.", "error");
+    showStatus(els.runStatus, "Screenshot OCR isn't in this build \u2014 switch to Paste text.", "error");
     return;
   }
 
@@ -201,9 +199,11 @@ async function runExtraction() {
   try {
     const translatedText = await translateLong(text, "th", "en");
     const distance = detectDistance(text);
+    const sourceLink = els.sourceLinkInput.value.trim() || null;
 
     lastResult = {
       sourceText: text,
+      sourceLink,
       translatedText,
       price: extractPrice(text),
       deposit: extractDeposit(text),
@@ -262,32 +262,63 @@ async function saveCurrentListing() {
   renderSaved();
 }
 
+function renderSavedItem(l) {
+  const isExpanded = expandedSavedId === l.id;
+  const sourceLinkRow = l.sourceLink
+    ? `<a class="chip-btn chip-link" href="${l.sourceLink}" target="_blank" rel="noopener">View original post</a>`
+    : "";
+
+  const detailsBlock = isExpanded
+    ? `
+      <div class="saved-item-details">
+        <div><strong>Translation</strong></div>
+        <p style="margin:4px 0 8px;">${escapeHtml(l.translatedText || "(no translation saved)")}</p>
+        <dl class="details-grid">
+          <dt>Price</dt><dd>${l.price ? escapeHtml(l.price) : "\u2014"}</dd>
+          <dt>Deposit</dt><dd>${l.deposit ? escapeHtml(l.deposit) : "\u2014"}</dd>
+          <dt>Location</dt><dd>${l.location ? escapeHtml(l.location) : "\u2014"}</dd>
+          <dt>Phone</dt><dd>${l.contactPhone ? escapeHtml(l.contactPhone) : "\u2014"}</dd>
+          <dt>Available</dt><dd>${l.availability ? escapeHtml(l.availability) : "\u2014"}</dd>
+        </dl>
+      </div>`
+    : "";
+
+  return `
+    <li class="saved-item" data-id="${l.id}">
+      <div class="saved-item-top">
+        <span class="saved-item-price">${l.price ? escapeHtml(l.price) : "Price n/a"}</span>
+        <span>${l.availability ? escapeHtml(l.availability) : ""}</span>
+      </div>
+      <div class="saved-item-loc">${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
+      <div class="saved-item-loc">${l.distanceText ? escapeHtml(l.distanceText) : ""}</div>
+      <div class="saved-item-actions">
+        <button class="chip-btn" data-action="toggle-details">${isExpanded ? "Hide details" : "View details"}</button>
+        <button class="chip-btn" data-action="call" data-phone="${(l.contactPhone || "").split(",")[0].trim()}">Call landlord</button>
+        ${sourceLinkRow}
+        <button class="chip-btn" data-action="remove">Remove</button>
+      </div>
+      ${detailsBlock}
+    </li>`;
+}
+
 async function renderSaved() {
   const { savedListings = [] } = await chrome.storage.local.get("savedListings");
   els.savedEmpty.classList.toggle("hidden", savedListings.length > 0);
-  els.savedList.innerHTML = savedListings
-    .map(
-      (l) => `
-      <li class="saved-item" data-id="${l.id}">
-        <div class="saved-item-top">
-          <span class="saved-item-price">${l.price ? escapeHtml(l.price) : "Price n/a"}</span>
-          <span>${l.availability ? escapeHtml(l.availability) : ""}</span>
-        </div>
-        <div class="saved-item-loc">${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
-        <div class="saved-item-loc">${l.distanceText ? escapeHtml(l.distanceText) : ""}</div>
-        <div class="saved-item-actions">
-          <button class="chip-btn" data-action="call" data-phone="${(l.contactPhone || "").split(",")[0].trim()}">Call landlord</button>
-          <button class="chip-btn" data-action="remove">Remove</button>
-        </div>
-      </li>`
-    )
-    .join("");
+  els.savedList.innerHTML = savedListings.map(renderSavedItem).join("");
 
+  els.savedList.querySelectorAll("[data-action='toggle-details']").forEach((btn) =>
+    btn.addEventListener("click", (e) => {
+      const id = Number(e.target.closest(".saved-item").dataset.id);
+      expandedSavedId = expandedSavedId === id ? null : id;
+      renderSaved();
+    })
+  );
   els.savedList.querySelectorAll("[data-action='remove']").forEach((btn) =>
     btn.addEventListener("click", async (e) => {
       const id = Number(e.target.closest(".saved-item").dataset.id);
       const { savedListings = [] } = await chrome.storage.local.get("savedListings");
       await chrome.storage.local.set({ savedListings: savedListings.filter((l) => l.id !== id) });
+      if (expandedSavedId === id) expandedSavedId = null;
       renderSaved();
     })
   );
