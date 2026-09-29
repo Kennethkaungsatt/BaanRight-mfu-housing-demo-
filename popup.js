@@ -19,6 +19,7 @@ document.querySelectorAll("[id]").forEach((el) => (els[el.id] = el));
 let currentMode = "text";
 let lastResult = null;
 let expandedSavedId = null; // tracks which saved item currently has details open
+let currentImageDataUrl = null;
 
 init();
 
@@ -29,6 +30,7 @@ async function init() {
   bindSave();
   bindAlerts();
   bindReply();
+  bindImageInput();
 
   const { pendingText } = await chrome.storage.local.get("pendingText");
   if (pendingText) {
@@ -59,17 +61,51 @@ function setActiveTab(name) {
     t.setAttribute("aria-selected", active);
   });
 }
+// -------- image -------
+function bindImageInput() {
+    console.log("bindImageInput called, imageInput element:", els.imageInput);
+    els.imageInput.addEventListener("change", handleImageSelect);
+}
 
+async function handleImageSelect(e) {
+    console.log("handleImageSelect fired", e.target.files);
+    const file = e.target.files[0];
+    if (!file) return;
+    currentImageDataUrl = await compressImage(file);
+    console.log("compressed image length:", currentImageDataUrl?.length);
+    els.imagePreview.src = currentImageDataUrl;
+    els.imagePreview.classList.remove("hidden");
+    console.log("imagePreview classes after:", els.imagePreview.className);
+}
+
+async function compressImage(file, maxWidth = 800, quality = 0.7) {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxWidth / bitmap.width);
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width * scale;
+    canvas.height = bitmap.height * scale;
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/jpeg", quality);
+}
 // ---------- Input mode ----------
 function bindModeButtons() {
-  document.querySelectorAll(".mode-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentMode = btn.dataset.mode;
-      document.querySelectorAll(".mode-btn").forEach((b) => b.classList.toggle("active", b === btn));
-      els.thaiText.classList.toggle("hidden", currentMode !== "text");
-      els.imageDrop.classList.toggle("hidden", currentMode !== "image");
+    document.querySelectorAll(".mode-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            currentMode = btn.dataset.mode;
+
+            document.querySelectorAll(".mode-btn").forEach((b) =>
+                b.classList.toggle("active", b === btn)
+            );
+
+            els.thaiText.classList.toggle("hidden", currentMode !== "text");
+            els.imageDrop.classList.toggle("hidden", currentMode !== "image");
+
+            els.runBtn.textContent =
+                currentMode === "image"
+                    ? "Save image"
+                    : "Translate & extract";
+        });
     });
-  });
 }
 
 // ---------- Translation ----------
@@ -186,11 +222,31 @@ async function runExtraction() {
   if (currentMode === "text" && !text) {
     showStatus(els.runStatus, "Paste some Thai text first.", "error");
     return;
-  }
-  if (currentMode === "image") {
-    showStatus(els.runStatus, "Screenshot OCR isn't in this build \u2014 switch to Paste text.", "error");
-    return;
-  }
+    }
+    //-- image --
+    if (currentMode === "image") {
+        if (!currentImageDataUrl) {
+            showStatus(els.runStatus, "Please upload a screenshot first.", "error");
+            return;
+        }
+
+        lastResult = {
+            sourceText: "",
+            sourceLink: els.sourceLinkInput.value.trim() || null,
+            translatedText: "",
+            price: null,
+            deposit: null,
+            location: null,
+            contactPhone: null,
+            availability: null,
+            distanceText: "Not extracted from screenshot",
+            distanceLink: null
+        };
+
+        renderResult(lastResult);
+        showStatus(els.runStatus, "Screenshot ready to save.", "ok");
+        return;
+    }
 
   els.runBtn.disabled = true;
   showStatus(els.runStatus, "Translating\u2026", "");
@@ -252,24 +308,18 @@ function bindSave() {
   els.saveListingBtn.addEventListener("click", saveCurrentListing);
 }
 
-async function saveCurrentListing() {
-  if (!lastResult) return;
-  const { savedListings = [] } = await chrome.storage.local.get("savedListings");
-  const listing = { id: Date.now(), savedAt: new Date().toISOString(), ...lastResult };
-  savedListings.unshift(listing);
-  await chrome.storage.local.set({ savedListings });
-  showStatus(els.saveStatus, "Saved to your listings.", "ok");
-  renderSaved();
-}
-
+ // --- add image ---
 function renderSavedItem(l) {
-  const isExpanded = expandedSavedId === l.id;
-  const sourceLinkRow = l.sourceLink
-    ? `<a class="chip-btn chip-link" href="${l.sourceLink}" target="_blank" rel="noopener">View original post</a>`
-    : "";
+    const isExpanded = expandedSavedId === l.id;
+    const sourceLinkRow = l.sourceLink
+        ? `<a class="chip-btn chip-link" href="${l.sourceLink}" target="_blank" rel="noopener">View original post</a>`
+        : "";
+    const photoBlock = l.image
+        ? `<img class="saved-item-photo" src="${l.image}" alt="listing photo" />`
+        : "";
 
-  const detailsBlock = isExpanded
-    ? `
+    const detailsBlock = isExpanded
+        ? `
       <div class="saved-item-details">
         <div><strong>Translation</strong></div>
         <p style="margin:4px 0 8px;">${escapeHtml(l.translatedText || "(no translation saved)")}</p>
@@ -281,10 +331,11 @@ function renderSavedItem(l) {
           <dt>Available</dt><dd>${l.availability ? escapeHtml(l.availability) : "\u2014"}</dd>
         </dl>
       </div>`
-    : "";
+        : "";
 
-  return `
+    return `
     <li class="saved-item" data-id="${l.id}">
+      ${photoBlock}
       <div class="saved-item-top">
         <span class="saved-item-price">${l.price ? escapeHtml(l.price) : "Price n/a"}</span>
         <span>${l.availability ? escapeHtml(l.availability) : ""}</span>
@@ -329,7 +380,26 @@ async function renderSaved() {
     })
   );
 }
+// -------- save image -------
+async function saveCurrentListing() {
+    if (!lastResult) return;
+    const { savedListings = [] } = await chrome.storage.local.get("savedListings");
+    const listing = {
+        id: Date.now(),
+        savedAt: new Date().toISOString(),
+        image: currentImageDataUrl,   // -- new image --
+        ...lastResult
+    };
+    savedListings.unshift(listing);
+    await chrome.storage.local.set({ savedListings });
+    showStatus(els.saveStatus, "Saved to your listings.", "ok");
 
+    currentImageDataUrl = null;     // -- new image - clear to not save with the new image --
+    els.imagePreview.classList.add("hidden");
+    els.imagePreview.src = "";
+
+    renderSaved();
+}
 // ---------- Alerts / preferences ----------
 function bindAlerts() {
   els.addAlertBtn.addEventListener("click", async () => {

@@ -141,3 +141,11 @@ input:focus, textarea:focus { outline: 2px solid var(--jade-400); outline-offset
 .reply-option { display: flex; align-items: flex-start; gap: 6px; font-size: 12.5px; }
 .reply-option input { margin-top: 2px; }
 #replyOutput { margin-top: 8px; }
+
+.saved-item-photo {
+    width: 100%;
+    max-height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}

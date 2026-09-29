@@ -22,51 +22,51 @@
 
   <!-- Translate panel -->
   <section id="panel-translate" class="panel">
-    <div class="input-modes">
-      <button class="mode-btn active" data-mode="text">Paste text</button>
-      <button class="mode-btn" data-mode="image">Screenshot</button>
-    </div>
-
-    <textarea id="thaiText" placeholder="&#3623;&#3634;&#3591; &#3592;&#3629;&#3591; 1 &#3611;&#3619;&#3632;&#3605;&#3641; &#3648;&#3604;&#3639;&#3629;&#3609;&#3621;&#3632; 6000 &#3610;&#3634;&#3607;..." rows="6"></textarea>
-
-    <div id="imageDrop" class="dropzone hidden">
-      <input type="file" id="imageInput" accept="image/*" />
-      <p class="hint">Screenshot OCR isn't wired up in this build \u2014 paste the post's text instead for now.</p>
-      <img id="imagePreview" class="hidden" alt="Screenshot preview" />
-    </div>
-
-    <label class="field-label" for="sourceLinkInput" style="margin-top:8px;">Source link (optional)</label>
-    <input type="url" id="sourceLinkInput" placeholder="Paste the Facebook post URL to revisit it later" />
-
-    <button id="runBtn" class="primary-btn">Translate &amp; extract</button>
-    <p id="runStatus" class="status"></p>
-
-    <div id="result" class="result hidden">
-      <div class="result-block">
-        <h3>Translation</h3>
-        <p id="translatedText"></p>
-      </div>
-      <div class="result-block">
-        <h3>Details</h3>
-        <dl id="detailsList" class="details-grid"></dl>
-      </div>
-      <div class="result-block">
-        <h3>Distance</h3>
-        <p id="distanceText"></p>
+      <div class="input-modes">
+          <button class="mode-btn active" data-mode="text">Paste text</button>
+          <button class="mode-btn" data-mode="image">Screenshot</button>
       </div>
 
-      <button id="saveListingBtn" class="secondary-btn">Save this listing</button>
-      <p id="saveStatus" class="status"></p>
+      <textarea id="thaiText" placeholder="&#3623;&#3634;&#3591; &#3592;&#3629;&#3591; 1 &#3611;&#3619;&#3632;&#3605;&#3641; &#3648;&#3604;&#3639;&#3629;&#3609;&#3621;&#3632; 6000 &#3610;&#3634;&#3607;..." rows="6"></textarea>
 
-      <button id="toggleReplyBtn" class="secondary-btn">Ask the landlord</button>
-      <div id="replyPanel" class="reply-panel hidden">
-        <p class="hint">Pick what you want to ask \u2014 we'll translate it to Thai for you.</p>
-        <div id="replyOptions" class="reply-options"></div>
-        <button id="generateReplyBtn" class="primary-btn">Generate Thai message</button>
-        <textarea id="replyOutput" class="hidden" rows="4" readonly></textarea>
-        <button id="copyReplyBtn" class="chip-btn hidden">Copy message</button>
+      <div id="imageDrop" class="dropzone hidden">
+          <label class="field-label" for="imageInput">Add a photo (optional)</label>
+          <input type="file" id="imageInput" accept="image/*" />
+          <img id="imagePreview" class="hidden" alt="Listing photo preview" />
       </div>
-    </div>
+
+      <label class="field-label" for="sourceLinkInput" style="margin-top:8px;">Source link (optional)</label>
+      <input type="url" id="sourceLinkInput" placeholder="Paste the Facebook post URL to revisit it later" />
+
+      <button id="runBtn" class="primary-btn">Translate &amp; extract</button>
+      <p id="runStatus" class="status"></p>
+
+      <div id="result" class="result hidden">
+          <div class="result-block">
+              <h3>Translation</h3>
+              <p id="translatedText"></p>
+          </div>
+          <div class="result-block">
+              <h3>Details</h3>
+              <dl id="detailsList" class="details-grid"></dl>
+          </div>
+          <div class="result-block">
+              <h3>Distance</h3>
+              <p id="distanceText"></p>
+          </div>
+
+          <button id="saveListingBtn" class="secondary-btn">Save this listing</button>
+          <p id="saveStatus" class="status"></p>
+
+          <button id="toggleReplyBtn" class="secondary-btn">Ask the landlord</button>
+          <div id="replyPanel" class="reply-panel hidden">
+              <p class="hint">Pick what you want to ask - we'll translate it to Thai for you.</p>
+              <div id="replyOptions" class="reply-options"></div>
+              <button id="generateReplyBtn" class="primary-btn">Generate Thai message</button>
+              <textarea id="replyOutput" class="hidden" rows="4" readonly></textarea>
+              <button id="copyReplyBtn" class="chip-btn hidden">Copy message</button>
+          </div>
+      </div>
   </section>
 
   <!-- Saved listings panel -->
