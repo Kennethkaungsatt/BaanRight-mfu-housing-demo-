@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Add photos — BaanRight</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">&#3610;</span>
+      <div class="brand-text">
+        <span class="brand-name">Add photos</span>
+        <span class="brand-sub">Straight into your BaanRight photo tray</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="panel">
+    <div class="card">
+      <div class="card-head"><h3>Pick listing photos</h3></div>
+      <p class="hint">Choose, drop, or paste screenshots here &mdash; they go into the same tray the extension popup shows, ready to tick and attach when you save a listing.</p>
+
+      <label class="dropzone" id="dropLabel" for="filePicker">
+        <div style="font-size:32px; line-height:1;">&#128247;</div>
+        <strong>Choose photos</strong>
+        <span class="hint" style="display:block; margin:6px 0 0;">or drop files here &middot; or paste with Ctrl/Cmd+V</span>
+      </label>
+      <input type="file" id="filePicker" accept="image/*" multiple hidden />
+
+      <p id="status" class="status"></p>
+      <div id="preview" class="photo-tray"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>What next?</h3></div>
+      <p class="hint" style="margin-bottom:0;">Done? Close this tab and open BaanRight &mdash; your photos are already in the tray. Tick the ones you want, then hit <strong>Save listing</strong>.</p>
+    </div>
+  </main>
+
+  <div id="toastWrap" class="toast-wrap" aria-live="polite"></div>
+
+  <script src="photo-add.js"></script>
+</body>
+</html>

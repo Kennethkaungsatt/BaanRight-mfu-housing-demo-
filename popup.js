@@ -35,12 +35,25 @@ async function init() {
   bindPhotos();
   bindSavedToolbar();
   bindShortcut();
+  bindDraft();
 
   applyTheme(await loadTheme());
 
   // Load the existing photo tray FIRST so a right-click photo below appends
   // to it instead of overwriting it.
   photoTray = (await storeGet("photoTray")).photoTray || photoTray;
+
+  // Restore the in-progress draft — the popup can close at any moment
+  // (losing focus, opening a file dialog), so never lose the user's work.
+  const { draft } = await storeGet("draft");
+  if (draft && typeof draft === "object") {
+    els.thaiText.value = draft.text || "";
+    els.sourceLinkInput.value = draft.link || "";
+    if (draft.result) {
+      lastResult = draft.result;
+      renderResult(lastResult);
+    }
+  }
 
   const { pendingText } = await storeGet("pendingText");
   if (pendingText) {
@@ -142,6 +155,15 @@ function bindModeButtons() {
       els.thaiText.classList.toggle("hidden", currentMode !== "text");
       els.imageDrop.classList.toggle("hidden", currentMode !== "image");
     });
+  });
+
+  // The native file dialog closes the popup on macOS, and OCR isn't wired
+  // up anyway — so block the picker and explain instead of killing the popup.
+  els.imageInput.addEventListener("click", (e) => {
+    e.preventDefault();
+    const msg = "Screenshot OCR isn't in this build \u2014 paste the post's text, or use + Add / right-click to save photos.";
+    showStatus(els.runStatus, msg, "error");
+    toast("Screenshot OCR isn't in this build yet", "error");
   });
 }
 
@@ -275,6 +297,31 @@ function bindShortcut() {
   });
 }
 
+function isMacPlatform() {
+  const p = navigator.userAgentData?.platform || navigator.platform || "";
+  return /mac/i.test(p);
+}
+
+// ---------- Draft autosave (popup can close without warning) ----------
+let draftTimer = null;
+function saveDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(async () => {
+    await storeSet({
+      draft: {
+        text: els.thaiText.value,
+        link: els.sourceLinkInput.value,
+        result: lastResult
+      }
+    });
+  }, 250);
+}
+
+function bindDraft() {
+  els.thaiText.addEventListener("input", saveDraft);
+  els.sourceLinkInput.addEventListener("input", saveDraft);
+}
+
 function showSkeleton(on) {
   els.skeleton.classList.toggle("hidden", !on);
 }
@@ -315,6 +362,7 @@ async function runExtraction() {
     };
 
     renderResult(lastResult);
+    saveDraft();
     showStatus(els.runStatus, "", "");
     toast("Translated \u2014 check the details below");
   } catch (err) {
@@ -384,7 +432,35 @@ async function copyText(text) {
 
 // ---------- Photo tray (save images) ----------
 function bindPhotos() {
-  els.addPhotoBtn.addEventListener("click", () => els.photoInput.click());
+  els.addPhotoBtn.addEventListener("click", () => {
+    // On macOS the native file chooser closes the extension popup
+    // (it loses focus), which kills the picker before a file is chosen.
+    // There, pick files on a normal extension tab instead.
+    const canOpenTab = typeof chrome !== "undefined" && chrome.tabs?.create && chrome.runtime?.getURL;
+    if (isMacPlatform() && canOpenTab) {
+      chrome.tabs.create({ url: chrome.runtime.getURL("photo-add.html") });
+      toast("Opening the photo uploader tab\u2026");
+      return;
+    }
+    els.photoInput.click();
+  });
+
+  // Paste a screenshot (Ctrl/Cmd+V) straight into the tray.
+  document.addEventListener("paste", async (e) => {
+    const items = [...(e.clipboardData?.items || [])];
+    const imgItem = items.find((i) => i.type && i.type.startsWith("image/"));
+    if (!imgItem) return;
+    const file = imgItem.getAsFile();
+    if (!file) return;
+    try {
+      const src = await fileToDataUrl(file);
+      if (addPhoto(src, { persist: true })) toast("Pasted photo added to the tray");
+    } catch (err) {
+      console.warn(err);
+      toast("Couldn't read the pasted image", "error");
+    }
+  });
+
   els.photoInput.addEventListener("change", async () => {
     const files = [...(els.photoInput.files || [])];
     els.photoInput.value = "";

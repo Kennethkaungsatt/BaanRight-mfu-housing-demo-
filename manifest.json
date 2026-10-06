@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "BaanRight \u2014 Thai Housing Translator",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Paste, screenshot, or select a Thai rental listing and get it translated, structured, distance-checked, and saved in one click. Built by 16RideRight.",
   "action": {
     "default_popup": "popup.html",

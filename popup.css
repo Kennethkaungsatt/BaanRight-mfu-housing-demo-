@@ -237,8 +237,12 @@ input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: .75
 
 .dropzone {
   border: 1.5px dashed var(--line); border-radius: var(--radius-sm);
-  padding: 16px; text-align: center; color: var(--ink-soft);
-  margin-top: 10px; background: var(--surface-2);
+  padding: 22px 16px; text-align: center; color: var(--ink-soft);
+  margin-top: 10px; background: var(--surface-2); cursor: pointer;
+  display: block; transition: border-color .15s ease, background .15s ease;
+}
+.dropzone:hover, .dropzone.active {
+  border-color: var(--jade-400); background: var(--jade-50);
 }
 #imagePreview { max-width: 100%; border-radius: 8px; margin-top: 8px; }
 
