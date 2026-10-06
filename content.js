@@ -23,21 +23,33 @@ document.addEventListener("mouseup", () => {
   const rect = range.getBoundingClientRect();
 
   floatBtn = document.createElement("button");
-  floatBtn.textContent = "Translate with Baan Buddy";
+  floatBtn.textContent = "\uD83C\uDF10 Translate with BaanRight";
   Object.assign(floatBtn.style, {
     position: "fixed",
-    top: `${Math.max(rect.top - 34, 4)}px`,
-    left: `${Math.min(rect.left, window.innerWidth - 200)}px`,
+    top: `${Math.max(rect.top - 38, 4)}px`,
+    left: `${Math.min(rect.left, window.innerWidth - 210)}px`,
     zIndex: 2147483647,
-    background: "#0f6e56",
+    background: "linear-gradient(135deg, #0f6e56, #1d9e75)",
     color: "white",
-    border: "none",
+    border: "1px solid rgba(255,255,255,0.25)",
     borderRadius: "999px",
-    padding: "6px 12px",
-    fontSize: "12px",
-    fontFamily: "sans-serif",
+    padding: "7px 14px",
+    fontSize: "12.5px",
+    fontWeight: "600",
+    fontFamily: "Segoe UI, -apple-system, sans-serif",
     cursor: "pointer",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
+    boxShadow: "0 6px 16px rgba(15,110,86,0.4)",
+    transform: "translateY(0)",
+    transition: "transform 0.15s ease, box-shadow 0.15s ease"
+  });
+
+  floatBtn.addEventListener("mouseenter", () => {
+    floatBtn.style.transform = "translateY(-1px)";
+    floatBtn.style.boxShadow = "0 9px 22px rgba(15,110,86,0.5)";
+  });
+  floatBtn.addEventListener("mouseleave", () => {
+    floatBtn.style.transform = "translateY(0)";
+    floatBtn.style.boxShadow = "0 6px 16px rgba(15,110,86,0.4)";
   });
 
   floatBtn.addEventListener("mousedown", (e) => e.preventDefault()); // keep selection

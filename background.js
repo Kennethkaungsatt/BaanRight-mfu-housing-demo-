@@ -1,16 +1,29 @@
 // Background service worker (Manifest V3)
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "translate-selection",
-    title: 'Translate with Baan Buddy',
-    contexts: ["selection"]
+  // Rebuild menus from scratch so updates never hit "duplicate id" errors.
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: "translate-selection",
+      title: "Translate with BaanRight",
+      contexts: ["selection"]
+    });
+    chrome.contextMenus.create({
+      id: "save-image",
+      title: "Save image to BaanRight",
+      contexts: ["image"]
+    });
   });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info) => {
   if (info.menuItemId === "translate-selection" && info.selectionText) {
     await chrome.storage.local.set({ pendingText: info.selectionText });
+    openPopupSafely();
+  }
+  if (info.menuItemId === "save-image" && info.srcUrl) {
+    // Park the image URL; the popup picks it up into its photo tray.
+    await chrome.storage.local.set({ pendingImage: info.srcUrl });
     openPopupSafely();
   }
 });
