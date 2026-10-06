@@ -10,6 +10,8 @@ let added = []; // photos added this session, for the local preview
 init();
 
 function init() {
+  renderPreview(); // show what's already in the tray when the tab opens
+
   els.filePicker.addEventListener("change", () => {
     ingest([...(els.filePicker.files || [])]);
     els.filePicker.value = "";
@@ -64,10 +66,19 @@ async function ingest(files) {
   }
 }
 
-function renderPreview() {
-  els.preview.innerHTML = added
+async function renderPreview() {
+  // Render the real tray from storage (falls back to this session's adds
+  // when storage is unavailable), so this tab always mirrors the popup.
+  const stored = await storeGet("photoTray");
+  const tray = Array.isArray(stored.photoTray) ? stored.photoTray : [];
+  const list = tray.length ? tray.map((p) => p.src) : added;
+
+  els.preview.innerHTML = list
     .map((src) => `<div class="photo-thumb selected"><img src="${escAttr(src)}" alt="" /></div>`)
     .join("");
+
+  if (els.emptyHint) els.emptyHint.classList.toggle("hidden", list.length > 0);
+  if (els.countChip) els.countChip.textContent = `${list.length} in tray`;
 }
 
 // ---------- Helpers (shared logic, mirrored from popup.js) ----------

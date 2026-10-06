@@ -419,3 +419,107 @@ input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: .75
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--jade-100); }
+
+/* ============================================================
+   Desktop page (photo-add.html) — full-window layout
+   The popup above is fixed at 380px; this page opens in a normal
+   tab, so it opts out with body.page-desktop and fills the window.
+   ============================================================ */
+.page-desktop {
+  width: auto;
+  min-height: 100vh;
+  font-size: 14px;
+  background:
+    radial-gradient(720px 400px at 10% -10%, rgba(29,158,117,.16), transparent 62%),
+    radial-gradient(560px 340px at 94% 2%, rgba(15,110,86,.14), transparent 60%),
+    var(--bg);
+}
+
+.page-desktop .topbar { padding: 16px clamp(18px, 5vw, 44px); }
+.page-desktop .brand-mark { width: 42px; height: 42px; border-radius: 14px; font-size: 20px; }
+.page-desktop .brand-name { font-size: 19px; }
+.page-desktop .brand-sub { font-size: 12px; }
+.topbar-hint {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+  padding: 6px 13px; border-radius: 999px; white-space: nowrap;
+}
+
+.page-desktop .panel-wide {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 26px clamp(18px, 5vw, 40px) 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+.page-desktop .card { padding: 20px 22px 22px; border-radius: 18px; }
+.page-desktop .card-side { position: sticky; top: 18px; }
+.page-desktop .card-head { margin-bottom: 6px; }
+.page-desktop .card-head h3 { font-size: 12px; }
+.page-desktop .hint { font-size: 13px; line-height: 1.6; margin: 6px 0 14px; }
+.page-desktop .side-lead { margin-bottom: 12px; }
+.page-desktop .status { font-size: 13px; margin-top: 10px; }
+
+/* Hero dropzone */
+.page-desktop .dropzone-hero {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 42px 24px;
+  border-width: 2px; border-radius: 16px;
+  margin-top: 4px;
+}
+.page-desktop .dz-emoji { font-size: 44px; line-height: 1; }
+.page-desktop .dz-title {
+  padding: 11px 26px; border-radius: 999px;
+  background: var(--grad); color: #fff;
+  font-size: 14px; font-weight: 700;
+  box-shadow: 0 6px 16px rgba(15,110,86,.3);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.page-desktop .dropzone-hero:hover .dz-title,
+.page-desktop .dropzone-hero.active .dz-title {
+  transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,110,86,.4);
+}
+.page-desktop .dz-sub { color: var(--ink-soft); font-size: 13px; }
+kbd {
+  font-family: inherit; font-size: 11.5px; font-weight: 700;
+  background: var(--surface); border: 1px solid var(--line);
+  border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px;
+  color: var(--ink);
+}
+
+/* Photo grid — big tiles instead of 62px popup thumbs */
+.page-desktop .photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.page-desktop .photo-grid .photo-thumb {
+  width: 100%; height: auto; aspect-ratio: 4 / 3;
+  border-radius: 14px;
+}
+.page-desktop .photo-grid .photo-thumb .photo-x { width: 22px; height: 22px; font-size: 12px; }
+.page-desktop .tray-empty { font-size: 13px; margin-top: 12px; }
+
+/* Sidebar steps */
+.steps { display: flex; flex-direction: column; gap: 9px; }
+.step {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--surface-2); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 13px; line-height: 1.5;
+}
+.step-n {
+  flex: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--grad); color: #fff;
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+
+@media (max-width: 860px) {
+  .page-desktop .panel-wide { grid-template-columns: 1fr; }
+  .page-desktop .card-side { position: static; }
+  .topbar-hint { display: none; }
+}

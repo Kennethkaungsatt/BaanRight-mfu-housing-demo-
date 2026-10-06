@@ -5,7 +5,7 @@
 <title>Add photos — BaanRight</title>
 <link rel="stylesheet" href="popup.css" />
 </head>
-<body>
+<body class="page-desktop">
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">&#3610;</span>
@@ -14,28 +14,38 @@
         <span class="brand-sub">Straight into your BaanRight photo tray</span>
       </div>
     </div>
+    <span class="topbar-hint">Safe tab &mdash; closing it never loses your photos</span>
   </header>
 
-  <main class="panel">
-    <div class="card">
-      <div class="card-head"><h3>Pick listing photos</h3></div>
+  <main class="panel panel-wide">
+    <section class="card">
+      <div class="card-head">
+        <h3>Pick listing photos</h3>
+        <span class="chip-btn" id="countChip">0 in tray</span>
+      </div>
       <p class="hint">Choose, drop, or paste screenshots here &mdash; they go into the same tray the extension popup shows, ready to tick and attach when you save a listing.</p>
 
-      <label class="dropzone" id="dropLabel" for="filePicker">
-        <div style="font-size:32px; line-height:1;">&#128247;</div>
-        <strong>Choose photos</strong>
-        <span class="hint" style="display:block; margin:6px 0 0;">or drop files here &middot; or paste with Ctrl/Cmd+V</span>
+      <label class="dropzone dropzone-hero" id="dropLabel" for="filePicker">
+        <span class="dz-emoji">&#128247;</span>
+        <strong class="dz-title">Choose photos</strong>
+        <span class="dz-sub">or drop files here &middot; or paste with <kbd>Ctrl/Cmd</kbd>+<kbd>V</kbd></span>
       </label>
       <input type="file" id="filePicker" accept="image/*" multiple hidden />
 
       <p id="status" class="status"></p>
-      <div id="preview" class="photo-tray"></div>
-    </div>
+      <div id="preview" class="photo-tray photo-grid"></div>
+      <p id="emptyHint" class="tray-empty">Nothing in the tray yet &mdash; added photos will appear here as a grid.</p>
+    </section>
 
-    <div class="card">
+    <aside class="card card-side">
       <div class="card-head"><h3>What next?</h3></div>
-      <p class="hint" style="margin-bottom:0;">Done? Close this tab and open BaanRight &mdash; your photos are already in the tray. Tick the ones you want, then hit <strong>Save listing</strong>.</p>
-    </div>
+      <p class="hint side-lead">Done? Close this tab and open BaanRight &mdash; your photos are already in the tray.</p>
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><span>Add photos here</span></div>
+        <div class="step"><span class="step-n">2</span><span>Open the BaanRight popup</span></div>
+        <div class="step"><span class="step-n">3</span><span>Tick the photos you want, then hit <strong>Save listing</strong></span></div>
+      </div>
+    </aside>
   </main>
 
   <div id="toastWrap" class="toast-wrap" aria-live="polite"></div>
