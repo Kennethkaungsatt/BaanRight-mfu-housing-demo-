@@ -1,5 +1,4 @@
 const MYMEMORY_URL = "https://api.mymemory.translated.net/get";
-const MFU_COORDS = { lat: 20.0432, lng: 99.8925 };
 
 const LANDMARKS = [
   { keywords: ["ฟ้าไทย", "fah thai", "ตลาดฟ้าไทย"], name: "Fah Thai market area", approxNote: "~5\u20138 min / 3\u20133.5 km from MFU (typical for this area)" }
@@ -58,6 +57,12 @@ async function init() {
   const { pendingText } = await storeGet("pendingText");
   if (pendingText) {
     els.thaiText.value = pendingText;
+    // The restored result belongs to the previous text \u2014 don't show it next to the new one.
+    lastResult = null;
+    els.result.classList.add("hidden");
+    // Save the selection as the draft BEFORE removing it from storage: the popup
+    // closes whenever the user clicks the page, and the text must survive that.
+    await storeSet({ draft: { text: pendingText, link: els.sourceLinkInput.value, result: null } });
     await storeRemove("pendingText");
     setActiveTab("translate");
   }
@@ -171,9 +176,24 @@ function bindModeButtons() {
 async function translateChunk(text, sourceLang, targetLang) {
   const params = new URLSearchParams({ q: text, langpair: `${sourceLang}|${targetLang}` });
   const res = await fetch(`${MYMEMORY_URL}?${params.toString()}`);
-  if (!res.ok) throw new Error(`Translate request failed (${res.status})`);
+  if (!res.ok) {
+    // HTTP 429 = the free quota / rate limit, not a broken request.
+    if (res.status === 429) throw new Error("Free translation limit reached \u2014 try again later (it resets daily)");
+    throw new Error(`Translate request failed (${res.status})`);
+  }
   const data = await res.json();
-  return data?.responseData?.translatedText || "";
+  const out = data?.responseData?.translatedText || "";
+  // MyMemory reports quota/limit problems with HTTP 200 and a warning *inside*
+  // translatedText — never treat that as a real translation.
+  const status = Number(data?.responseStatus ?? 200);
+  const isWarning = /^(MYMEMORY WARNING|QUERY LENGTH LIMIT|PLEASE SELECT TWO DISTINCT)/i.test(out.trim());
+  if (status !== 200 || isWarning) {
+    const quota = status === 429 || /MYMEMORY WARNING/i.test(out);
+    throw new Error(quota
+      ? "Free translation limit reached \u2014 try again later (it resets daily)"
+      : "Translation service returned an error");
+  }
+  return out;
 }
 
 function splitIntoChunks(text, maxBytes = 450) {
@@ -212,15 +232,24 @@ function extractPrice(text) {
   if (m) return `${m[1]} THB/month`;
   m = text.match(/(\d[\d,]{2,})\s*บาทเท่านั้น/);
   if (m) return `${m[1]} THB/month`;
-  return null;
+    return null;
+}
+
+// Thai digits (๐-๙) → ASCII, so "๔,๕๐๐" parses like "4,500".
+function normalizeDigits(s) {
+    return String(s || "").replace(/[๐-๙]/g, (d) => String(d.charCodeAt(0) - 0x0E50));
 }
 
 function extractDeposit(text) {
-  let m = text.match(/ประกัน[:\s]*([\d]+)\s*(เดือน|บาท)/);
-  if (m) return m[2] === "เดือน" ? `${m[1]} month(s) rent` : `${m[1]} THB`;
-  m = text.match(/มัดจำ[:\s]*([\d]+)\s*(เดือน|บาท)?/);
-  if (m) return m[2] === "บาท" ? `${m[1]} THB` : `${m[1]} month(s) rent (approx.)`;
-  return null;
+    // Covers ประกัน / ประกันห้อง / เงินประกัน / มัดจำ, with or without a comma or unit.
+      const m = text.match(/(?:ประกัน(?:ห้อง|ความเสียหาย)?|มัดจำ)[:\s]*(\d[\d,]*)\s*(เดือน|บาท)?/);
+      if (!m) return null;
+      const raw = m[1].replace(/,+$/, "");
+      const n = Number(raw.replace(/,/g, ""));
+      if (m[2] === "เดือน") return `${raw} month(s) rent`;
+      if (m[2] === "บาท") return `${raw} THB`;
+      // No unit: a small number is almost certainly months, a big one is baht.
+    return n <= 12 ? `${raw} month(s) rent (approx.)` : `${raw} THB (approx.)`;
 }
 
 function extractPhone(text) {
@@ -241,13 +270,12 @@ function extractLocation(text) {
   const patterns = [
     /ทำเล\s*[:：]\s*([^\n]+)/,
     /(ซอย[^\n,]+)/,
-    /(พื้นที่ใช้สอย[^\n,]+)/,
     /(ห่างจาก[^\n,]+|ห่างมอ[^\n,]+|ใกล้[^\n,]+)/
   ];
   for (const p of patterns) {
     const m = text.match(p);
     if (!m) continue;
-    const value = clean(m[1].replace("พื้นที่ใช้สอย", ""));
+      const value = clean(m[1]);
     if (value) return value;
   }
   return null;
@@ -261,25 +289,29 @@ function extractAvailability(text) {
 
 // ---------- Distance detection ----------
 function detectDistance(text) {
-  const linkMatch = text.match(/https?:\/\/(?:maps\.app\.goo\.gl|g\.co\/kgs|goo\.gl\/maps|www\.google\.com\/maps)\S+/i);
-  const kmNear = text.match(/([\d.]+)\s*(?:กม\.?|km)/i);
-  if (linkMatch) {
-    const kmPart = kmNear ? ` (\u2248${kmNear[1]} km)` : "";
-    return { text: `Map link provided by landlord${kmPart}`, link: linkMatch[0] };
-  }
+    const linkMatch = text.match(/https?:\/\/(?:maps\.app\.goo\.gl|g\.co\/kgs|goo\.gl\/maps|www\.google\.com\/maps)\S+/i);
+    const kmNear = text.match(/(\d+(?:\.\d+)?)\s*(?:กม\.?|km)/i); // แก้ไขการอ่านเลขทศนิยม
+    const stated = text.match(/(\d+)\s*(นาที|min)/i);              // ย้ายขึ้นมาไว้ก่อน if (linkMatch)
 
-  const stated = text.match(/(\d+)\s*(นาที|min)/i);
-  if (stated) {
-    return { text: `${stated[1]} min from MFU (stated in listing)`, link: null };
-  }
-
-  for (const landmark of LANDMARKS) {
-    if (landmark.keywords.some((k) => text.toLowerCase().includes(k.toLowerCase()))) {
-      return { text: `${landmark.name} \u2014 ${landmark.approxNote}`, link: null };
+    if (linkMatch) {
+        const extras = [];
+        if (kmNear) extras.push(`≈${kmNear[1]} km`);
+        if (stated) extras.push(`${stated[1]} min from MFU, as stated`);
+        const extraPart = extras.length ? ` (${extras.join(", ")})` : "";
+        return { text: `Map link provided by landlord${extraPart}`, link: linkMatch[0] };
     }
-  }
 
-  return { text: "Distance not stated \u2014 check the listing manually", link: null };
+    if (stated) {
+        return { text: `${stated[1]} min from MFU (stated in listing)`, link: null };
+    }
+
+    for (const landmark of LANDMARKS) {
+        if (landmark.keywords.some((k) => text.toLowerCase().includes(k.toLowerCase()))) {
+            return { text: `${landmark.name} \u2014 ${landmark.approxNote}`, link: null };
+        }
+    }
+
+    return { text: "Distance not stated \u2014 check the listing manually", link: null };
 }
 
 // ---------- Run translate/extract ----------
@@ -327,6 +359,7 @@ function showSkeleton(on) {
 }
 
 async function runExtraction() {
+  if (els.runBtn.disabled) return; // Ctrl+Enter must not start a second run
   const text = els.thaiText.value.trim();
   if (currentMode === "text" && !text) {
     showStatus(els.runStatus, "Paste some Thai text first.", "error");
@@ -345,18 +378,19 @@ async function runExtraction() {
 
   try {
     const translatedText = await translateLong(text, "th", "en");
-    const distance = detectDistance(text);
+    const norm = normalizeDigits(text); //extractors see ASCII digits; translation sees the original
+    const distance = detectDistance(norm);
     const sourceLink = els.sourceLinkInput.value.trim() || null;
 
     lastResult = {
       sourceText: text,
       sourceLink,
       translatedText,
-      price: extractPrice(text),
-      deposit: extractDeposit(text),
-      location: extractLocation(text),
-      contactPhone: extractPhone(text),
-      availability: extractAvailability(text),
+      price: extractPrice(norm),
+      deposit: extractDeposit(norm),
+      location: extractLocation(norm),
+      contactPhone: extractPhone(norm),
+      availability: extractAvailability(norm),
       distanceText: distance.text,
       distanceLink: distance.link
     };
@@ -895,3 +929,15 @@ function escapeHtml(str) {
 function escAttr(str) {
   return escapeHtml(str).replace(/"/g, "&quot;");
 }
+// ---------- Clear Text Button ----------
+document.addEventListener("click", (e) => {
+  if (e.target.id !== "clearTextBtn") return;
+  els.thaiText.value = "";
+  lastResult = null;
+  els.result.classList.add("hidden");
+  showStatus(els.runStatus, "", "");
+  showStatus(els.saveStatus, "", "");
+  saveDraft(); // otherwise the old text comes back next time the popup opens
+  els.thaiText.focus();
+  toast("Text cleared");
+});
