@@ -51,7 +51,11 @@ async function ingest(files) {
       const tray = stored.photoTray || [];
       if (tray.some((p) => p.src === src)) continue;
       tray.unshift({ id: Date.now() + Math.random(), src, selected: true });
-      await storeSet({ photoTray: tray });
+      const saved = await storeSet({ photoTray: tray });
+
+   if (!saved) {
+      throw new Error("Could not save photo to storage");
+    }
       added.unshift(src);
       okCount++;
     } catch (err) {
