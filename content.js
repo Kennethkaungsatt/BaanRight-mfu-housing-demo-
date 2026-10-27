@@ -27,7 +27,7 @@ document.addEventListener("mouseup", () => {
   Object.assign(floatBtn.style, {
     position: "fixed",
     top: `${Math.max(rect.top - 38, 4)}px`,
-    left: `${Math.min(rect.left, window.innerWidth - 210)}px`,
+    left: `${Math.max(4, Math.min(rect.left, window.innerWidth - 210))}px`,
     zIndex: 2147483647,
     background: "linear-gradient(135deg, #0f6e56, #1d9e75)",
     color: "white",
