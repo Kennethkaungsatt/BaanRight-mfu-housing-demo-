@@ -800,7 +800,7 @@ function renderSavedItem(l) {
         <span class="saved-item-price">${l.price ? escapeHtml(l.price) : "Price n/a"}</span>
         ${l.availability ? `<span class="saved-item-avail">${escapeHtml(l.availability)}</span>` : ""}
       </div>
-      <div class="saved-item-loc">&#128205; ${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
+      <div class="saved-item-loc">${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
       ${l.distanceText ? `<div class="saved-item-dist">${escapeHtml(l.distanceText)}</div>` : ""}
       ${thumbs}
       <div class="saved-item-actions">
@@ -975,7 +975,7 @@ async function renderAlerts() {
       <li class="saved-item" data-id="${a.id}">
         <div class="saved-item-top">
           <span class="saved-item-price">${a.preferredArea ? escapeHtml(a.preferredArea) : "Any area"}</span>
-          <span class="saved-item-avail">${a.maxPrice ? `&#8804; ${a.maxPrice} THB` : "Any budget"}</span>
+          <span class="saved-item-avail">${a.maxPrice ? `${a.maxPrice} THB` : "Any budget"}</span>
         </div>
         <div class="saved-item-actions">
           <button class="chip-btn" data-action="remove">Remove</button>
