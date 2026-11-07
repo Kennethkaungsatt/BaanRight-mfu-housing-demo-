@@ -48,6 +48,7 @@ async function init() {
   if (draft && typeof draft === "object") {
     els.thaiText.value = draft.text || "";
     els.sourceLinkInput.value = draft.link || "";
+    restoredDraftText = els.thaiText.value;
     if (draft.result) {
       lastResult = draft.result;
       renderResult(lastResult);
@@ -446,7 +447,8 @@ function isMacPlatform() {
 }
 
 // ---------- Draft autosave (popup can close without warning) ----------
-let draftTimer = null;
+let restoredDraftText = '';
+  let draftTimer = null;
 function saveDraft() {
   clearTimeout(draftTimer);
   draftTimer = setTimeout(async () => {
@@ -461,7 +463,7 @@ function saveDraft() {
 }
 
 function bindDraft() {
-  els.thaiText.addEventListener("input", saveDraft);
+  els.thaiText.addEventListener("input", () => { restoredDraftText = ''; saveDraft(); });
   els.sourceLinkInput.addEventListener("input", saveDraft);
 }
 
@@ -477,8 +479,11 @@ async function runExtraction() {
     showStatus(els.runStatus, "Screenshot OCR isn't in this build \u2014 switch to Paste text.", "error");
     return;
   }
+  // If the text box holds the untouched restored draft, treat it as empty
+  // so the Source link flow can run.
+  const textIsPristineDraft = !!text && text === restoredDraftText;
   // Empty text box but a Source link? Pull the post's own text from the link.
-  if (!text && sourceLink) {
+  if ((!text || textIsPristineDraft) && sourceLink) {
     if (!isFacebookLink(sourceLink)) {
       showStatus(els.runStatus, "Source link must be a Facebook post.", "error");
       toast("That source link isn't a Facebook post", "error");
@@ -490,6 +495,7 @@ async function runExtraction() {
       text = await pullPostText(sourceLink);
       els.thaiText.value = text;
       saveDraft();
+      restoredDraftText = '';
       toast("Post text pulled from the link");
     } catch (err) {
       console.warn(err);
