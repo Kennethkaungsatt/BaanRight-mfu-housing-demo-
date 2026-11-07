@@ -441,7 +441,7 @@ async function pullPostText(sourceLink) {
   // If this is a share link that Facebook blocked (HTTP 400, no og: tags),
   // give a clear actionable message instead of a raw status.
   if (/\/share\//i.test(new URL(sourceLink).pathname)) {
-    throw new Error("Facebook blocked that link — open the post in a tab and press Translate again");
+    throw new Error(BaanRightSourceLink.failureMessage(sourceLink));
   }
   return reply.text;
 }
@@ -512,7 +512,7 @@ async function runExtraction() {
     els.runBtn.disabled = true;
     showStatus(els.runStatus, "Pulling the post text\u2026", "");
     try {
-      text = await pullPostText(sourceLink);
+      text = await BaanRightSourceLink.readPostTextFromLink(sourceLink);
       els.thaiText.value = text;
       saveDraft();
       restoredDraftText = '';
@@ -791,7 +791,7 @@ function matchesQuery(l, q) {
 function renderSavedItem(l) {
   const isExpanded = expandedSavedId === l.id;
   const sourceLinkRow = l.sourceLink
-    ? `<a class="chip-btn chip-link" href="${escAttr(l.sourceLink)}" target="_blank" rel="noopener">View original post</a>`
+    ? BaanRightSourceLink.chipHtml(l.sourceLink)
     : "";
   const phone = (l.contactPhone || "").split(",")[0].trim();
 
