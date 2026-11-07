@@ -232,7 +232,17 @@ function extractPrice(text) {
   if (m) return `${m[1]} THB/month`;
   m = text.match(/(\d[\d,]{2,})\s*บาทเท่านั้น/);
   if (m) return `${m[1]} THB/month`;
-    return null;
+  // Rent named before the amount: "ราคา 4,500", "เช่า 4500 บาท",
+  // "ค่าเช่าเดือนละ 4500". Never a room count or an area.
+  m = text.match(/(?:ค่าเช่า|ราคา|เช่า)\s*(?:เดือนละ|ต่อเดือน)?[:\s]*([\d,]{3,})(?![\d,])\s*(?!ตร|ตาราง|ห้อง|นาที|กม|km|min)(?:บาท)?/i);
+  if (m) return `${m[1]} THB/month`;
+  // Amount after a leading unit: "เดือนละ 4500", "ต่อเดือน 4,500 บาท".
+  m = text.match(/(?:เดือนละ|ต่อเดือน)[:\s]*([\d,]{3,})(?![\d,])\s*(?:บาท)?/);
+  if (m) return `${m[1]} THB/month`;
+  // Amount followed by the unit: "4500/เดือน", "4500 ต่อเดือน", "4500/ด.".
+  m = text.match(/([\d,]{3,})\s*(?:บาท)?\s*(?:\/เดือน|\/ด\.?|ต่อเดือน)/);
+  if (m) return `${m[1]} THB/month`;
+  return null;
 }
 
 // Thai digits (๐-๙) → ASCII, so "๔,๕๐๐" parses like "4,500".
@@ -241,8 +251,10 @@ function normalizeDigits(s) {
 }
 
 function extractDeposit(text) {
-    // Covers ประกัน / ประกันห้อง / เงินประกัน / มัดจำ, with or without a comma or unit.
-      const m = text.match(/(?:ประกัน(?:ห้อง|ความเสียหาย)?|มัดจำ)[:\s]*(\d[\d,]*)\s*(เดือน|บาท)?/);
+    // Covers ประกัน / ประกันห้อง / ประกันความเสียหาย / ประกันล่วงหน้า /
+    // เงินประกัน / มัดจำ / ค่ามัดจำ / ค่าประกัน — with or without a comma or
+    // unit, and with or without a linking "เป็นเงิน" / "จำนวน".
+      const m = text.match(/(?:เงิน)?(?:ค่าประกัน|ประกัน|ค่ามัดจำ|มัดจำ)(?:ห้อง|ความเสียหาย|ล่วงหน้า)?[:\s]*(?:เป็นเงิน|จำนวน)?[:\s]*(\d[\d,]*)\s*(เดือน|บาท)?/);
       if (!m) return null;
       const raw = m[1].replace(/,+$/, "");
       const n = Number(raw.replace(/,/g, ""));
