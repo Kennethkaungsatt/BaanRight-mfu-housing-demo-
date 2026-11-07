@@ -19,7 +19,9 @@
   "permissions": ["storage", "contextMenus", "activeTab", "downloads", "unlimitedStorage"],
   "host_permissions": [
     "https://api.mymemory.translated.net/*",
-    "https://nominatim.openstreetmap.org/*"
+    "https://nominatim.openstreetmap.org/*",
+    "https://*.facebook.com/*",
+    "https://*.fb.com/*"
   ],
   "background": {
     "service_worker": "background.js"

@@ -314,6 +314,105 @@ function detectDistance(text) {
     return { text: "Distance not stated \u2014 check the listing manually", link: null };
 }
 
+// ---------- Source link → post text ----------
+const FACEBOOK_HOST = /(?:^|\.)(?:facebook\.com|fb\.com)$/i;
+
+function isFacebookLink(raw) {
+  try { return FACEBOOK_HOST.test(new URL(raw).hostname); } catch { return false; }
+}
+
+// The same post has many URL shapes (tracking params, ?story_fbid=, /posts/…),
+// so compare the post id when both sides carry one.
+function canonicalPostUrl(raw) {
+  try {
+    const url = new URL(raw);
+    url.hostname = url.hostname.toLowerCase().replace(/^(?:www\.|m\.|web\.)/, "");
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (!/^(?:story_fbid|fbid|multi_permalinks|v)$/i.test(key)) url.searchParams.delete(key);
+    }
+    url.pathname = url.pathname.replace(/\/+$/, "");
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function postIds(raw) {
+  const ids = new Set();
+  let url;
+  try { url = new URL(raw); } catch { return ids; }
+  for (const key of ["story_fbid", "fbid", "multi_permalinks"]) {
+    const value = url.searchParams.get(key);
+    if (value && /^\d+$/.test(value)) ids.add(value);
+  }
+  for (const match of url.pathname.matchAll(/\/(?:posts|permalink|videos)\/(\d+)/g)) ids.add(match[1]);
+  return ids;
+}
+
+function postHost(raw) {
+  try { return new URL(raw).hostname.toLowerCase().replace(/^(?:www\.|m\.|web\.|mbasic\.)/, ""); }
+  catch { return ""; }
+}
+
+// The group / page a post lives in, so two different groups that happen to
+// reuse a post id never look like the same post.
+function postScope(raw) {
+  try {
+    const path = new URL(raw).pathname.replace(/\/+$/, "");
+    const group = path.match(/^\/groups\/([^/]+)/i);
+    if (group) return `g:${group[1]}`;
+    const page = path.match(/^\/([^/]+)\/(?:posts|videos)\//i);
+    return page ? `p:${page[1]}` : "";
+  } catch {
+    return "";
+  }
+}
+
+function samePost(a, b) {
+  if (!a || !b) return false;
+  if (canonicalPostUrl(a) === canonicalPostUrl(b)) return true;
+  if (postHost(a) !== postHost(b)) return false;
+  const scopeA = postScope(a);
+  const scopeB = postScope(b);
+  if (scopeA && scopeB && scopeA !== scopeB) return false;
+  const idsA = postIds(a);
+  const idsB = postIds(b);
+  return idsA.size > 0 && [...idsA].some((id) => idsB.has(id));
+}
+
+// Ask the page the user is on first: it can read the post with their own
+// Facebook session. Only trust it when the tab really shows that post.
+function readTextFromTab(sourceLink) {
+  return new Promise((resolve) => {
+    if (!chrome.tabs?.query) return resolve("");
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs && tabs[0];
+      if (!tab || !tab.id || !samePost(tab.url, sourceLink)) return resolve("");
+      chrome.tabs.sendMessage(tab.id, { type: "GET_POST_TEXT", url: sourceLink }, (res) => {
+        if (chrome.runtime.lastError) return resolve(""); // no content script in that tab
+        resolve((res && res.text) || "");
+      });
+    });
+  });
+}
+
+// Then let the background worker fetch the post with the user's cookies.
+async function pullPostText(sourceLink) {
+  const fromTab = await readTextFromTab(sourceLink);
+  if (fromTab) return fromTab;
+
+  let reply;
+  try {
+    reply = await chrome.runtime.sendMessage({ type: "FETCH_POST_TEXT", url: sourceLink });
+  } catch {
+    throw new Error("Couldn't read that post \u2014 paste its text instead");
+  }
+  if (reply?.error) throw new Error(reply.error);
+  if (!reply?.text) throw new Error("Couldn't read that post \u2014 paste its text instead");
+  return reply.text;
+}
+
 // ---------- Run translate/extract ----------
 function bindRun() {
   els.runBtn.addEventListener("click", runExtraction);
@@ -360,14 +459,38 @@ function showSkeleton(on) {
 
 async function runExtraction() {
   if (els.runBtn.disabled) return; // Ctrl+Enter must not start a second run
-  const text = els.thaiText.value.trim();
-  if (currentMode === "text" && !text) {
-    showStatus(els.runStatus, "Paste some Thai text first.", "error");
-    toast("Paste some Thai text first", "error");
-    return;
-  }
+  let text = els.thaiText.value.trim();
+  const sourceLink = els.sourceLinkInput.value.trim() || null;
   if (currentMode === "image") {
     showStatus(els.runStatus, "Screenshot OCR isn't in this build \u2014 switch to Paste text.", "error");
+    return;
+  }
+  // Empty text box but a Source link? Pull the post's own text from the link.
+  if (!text && sourceLink) {
+    if (!isFacebookLink(sourceLink)) {
+      showStatus(els.runStatus, "Source link must be a Facebook post.", "error");
+      toast("That source link isn't a Facebook post", "error");
+      return;
+    }
+    els.runBtn.disabled = true;
+    showStatus(els.runStatus, "Pulling the post text\u2026", "");
+    try {
+      text = await pullPostText(sourceLink);
+      els.thaiText.value = text;
+      saveDraft();
+      toast("Post text pulled from the link");
+    } catch (err) {
+      console.warn(err);
+      showStatus(els.runStatus, err.message, "error");
+      toast("Couldn't read the post \u2014 paste the text instead", "error");
+      return;
+    } finally {
+      els.runBtn.disabled = false;
+    }
+  }
+  if (!text) {
+    showStatus(els.runStatus, "Paste some Thai text first.", "error");
+    toast("Paste some Thai text first", "error");
     return;
   }
 
@@ -380,7 +503,6 @@ async function runExtraction() {
     const translatedText = await translateLong(text, "th", "en");
     const norm = normalizeDigits(text); //extractors see ASCII digits; translation sees the original
     const distance = detectDistance(norm);
-    const sourceLink = els.sourceLinkInput.value.trim() || null;
 
     lastResult = {
       sourceText: text,
