@@ -334,6 +334,17 @@ function isFacebookLink(raw) {
   try { return FACEBOOK_HOST.test(new URL(raw).hostname); } catch { return false; }
 }
 
+// Share links like /share/p/<token> carry no post id, so samePost() can never match.
+function isShareLink(raw) {
+  try { return /^\/share\//i.test(new URL(raw).pathname); } catch { return false; }
+}
+
+// facebook.com/ or fb.com/ with no path is the home page; only trust tabs
+// that show a real post (not the home feed).
+function isFacebookHome(raw) {
+  try { const u = new URL(raw); return !u.pathname || u.pathname === "/"; } catch { return true; }
+}
+
 // The same post has many URL shapes (tracking params, ?story_fbid=, /posts/…),
 // so compare the post id when both sides carry one.
 function canonicalPostUrl(raw) {
@@ -401,7 +412,11 @@ function readTextFromTab(sourceLink) {
     if (!chrome.tabs?.query) return resolve("");
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs && tabs[0];
-      if (!tab || !tab.id || !samePost(tab.url, sourceLink)) return resolve("");
+      const tabUrl = tab && tab.url || "";
+      // For share links (/share/p/…), trust the active tab if it's Facebook
+      // and not the home feed, since the user opened that post themselves.
+      const trustedShareTab = isShareLink(sourceLink) && isFacebookLink(tabUrl) && !isFacebookHome(tabUrl);
+      if (!samePost(tabUrl, sourceLink) && !trustedShareTab) return resolve("");
       chrome.tabs.sendMessage(tab.id, { type: "GET_POST_TEXT", url: sourceLink }, (res) => {
         if (chrome.runtime.lastError) return resolve(""); // no content script in that tab
         resolve((res && res.text) || "");
@@ -423,6 +438,11 @@ async function pullPostText(sourceLink) {
   }
   if (reply?.error) throw new Error(reply.error);
   if (!reply?.text) throw new Error("Couldn't read that post \u2014 paste its text instead");
+  // If this is a share link that Facebook blocked (HTTP 400, no og: tags),
+  // give a clear actionable message instead of a raw status.
+  if (/\/share\//i.test(new URL(sourceLink).pathname)) {
+    throw new Error("Facebook blocked that link — open the post in a tab and press Translate again");
+  }
   return reply.text;
 }
 
