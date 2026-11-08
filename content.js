@@ -70,31 +70,7 @@ document.addEventListener("mousedown", (e) => {
 // and a Source link, so this runs on demand, in the tab they are already
 // looking at, with their own Facebook session.
 const POST_TEXT_MIN = 20;
-const POST_BOILERPLATE = /log ?in to facebook|see posts, photos and more on facebook|this content isn.t available|isn.t available right now|content not found|view ?comment|comment ?loaded|reply ?to this|commented on|\d+ comments?/i;
-
-// Check if text likely contains comment附着 (not just the main post).
-function hasCommentIndicators(text) {
-  if (!text) return true;
-  const t = String(text).toLowerCase();
-  // Common comment‑related patterns
-  const commentPatterns = [
-    /view ?more ?comment/i,
-    /\d+ ?comments?/i,
-    /reply ?to ?this/i,
-    /commented ?on /i,
-    /^\w+[:\s].+$/m,                     // a line that starts with a name followed by colon (typical comment format)
-    /\b(?:pm|am)\s\d{1,2}:\d{2}/i,       // time stamps like "10:30 PM"
-    /·\s*\w+·/i,                         // some UI separators that appear between comments
-  ];
-  for (const pat of commentPatterns) {
-    if (pat.test(t)) return true;
-  }
-  // If the text has ≥ 3 lines that look like “name: message”, treat it as comment‑heavy
-  const lines = t.split(/\n/).filter(l => l.trim().length > 0);
-  const nameLineCount = lines.filter(l => /^\w+[:\s]/.test(l)).length;
-  if (nameLineCount >= 3) return true;
-  return false;
-}
+const POST_BOILERPLATE = /log ?in to facebook|see posts, photos and more on facebook|this content isn.t available|isn.t available right now|content not found/i;
 
 function metaContent(name) {
   const el = document.querySelector(`meta[property="${name}"], meta[name="${name}"]`);
@@ -139,9 +115,7 @@ function pickPostText(groups) {
   for (const candidates of groups) {
     const usable = candidates
       .map((t) => String(t || "").replace(/\r/g, "").trim())
-      .filter((t) => t.length >= POST_TEXT_MIN)
-      //throw away if the text has comment indicators (not just the main post)
-      .filter((t) => !hasCommentIndicators(t));
+      .filter((t) => t.length >= POST_TEXT_MIN && !POST_BOILERPLATE.test(t));
     if (usable.length) return usable.sort((a, b) => b.length - a.length)[0];
   }
   return "";

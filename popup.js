@@ -430,19 +430,15 @@ async function pullPostText(sourceLink) {
   const fromTab = await readTextFromTab(sourceLink);
   if (fromTab) return fromTab;
 
+  const openTabMsg = "Couldn't read that post from the link \u2014 open the post in a tab, then press Translate again";
+
   let reply;
   try {
     reply = await chrome.runtime.sendMessage({ type: "FETCH_POST_TEXT", url: sourceLink });
   } catch {
-    throw new Error("Couldn't read that post \u2014 paste its text instead");
+    throw new Error(openTabMsg);
   }
-  if (reply?.error) throw new Error(reply.error);
-  if (!reply?.text) throw new Error("Couldn't read that post \u2014 paste its text instead");
-  // If this is a share link that Facebook blocked (HTTP 400, no og: tags),
-  // give a clear actionable message instead of a raw status.
-  if (/\/share\//i.test(new URL(sourceLink).pathname)) {
-    throw new Error(BaanRightSourceLink.failureMessage(sourceLink));
-  }
+  if (!reply?.text) throw new Error(openTabMsg);
   return reply.text;
 }
 
@@ -512,7 +508,7 @@ async function runExtraction() {
     els.runBtn.disabled = true;
     showStatus(els.runStatus, "Pulling the post text\u2026", "");
     try {
-      text = await BaanRightSourceLink.readPostTextFromLink(sourceLink);
+      text = await pullPostText(sourceLink);
       els.thaiText.value = text;
       saveDraft();
       restoredDraftText = '';
@@ -791,7 +787,7 @@ function matchesQuery(l, q) {
 function renderSavedItem(l) {
   const isExpanded = expandedSavedId === l.id;
   const sourceLinkRow = l.sourceLink
-    ? BaanRightSourceLink.chipHtml(l.sourceLink)
+    ? `<a class="chip-btn chip-link" href="${escAttr(l.sourceLink)}" target="_blank" rel="noopener">View original post</a>`
     : "";
   const phone = (l.contactPhone || "").split(",")[0].trim();
 
