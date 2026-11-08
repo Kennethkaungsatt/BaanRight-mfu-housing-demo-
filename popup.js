@@ -48,6 +48,7 @@ async function init() {
   if (draft && typeof draft === "object") {
     els.thaiText.value = draft.text || "";
     els.sourceLinkInput.value = draft.link || "";
+    restoredDraftText = els.thaiText.value;
     if (draft.result) {
       lastResult = draft.result;
       renderResult(lastResult);
@@ -232,7 +233,17 @@ function extractPrice(text) {
   if (m) return `${m[1]} THB/month`;
   m = text.match(/(\d[\d,]{2,})\s*บาทเท่านั้น/);
   if (m) return `${m[1]} THB/month`;
-    return null;
+  // Rent named before the amount: "ราคา 4,500", "เช่า 4500 บาท",
+  // "ค่าเช่าเดือนละ 4500". Never a room count or an area.
+  m = text.match(/(?:ค่าเช่า|ราคา|เช่า)\s*(?:เดือนละ|ต่อเดือน)?[:\s]*([\d,]{3,})(?![\d,])\s*(?!ตร|ตาราง|ห้อง|นาที|กม|km|min)(?:บาท)?/i);
+  if (m) return `${m[1]} THB/month`;
+  // Amount after a leading unit: "เดือนละ 4500", "ต่อเดือน 4,500 บาท".
+  m = text.match(/(?:เดือนละ|ต่อเดือน)[:\s]*([\d,]{3,})(?![\d,])\s*(?:บาท)?/);
+  if (m) return `${m[1]} THB/month`;
+  // Amount followed by the unit: "4500/เดือน", "4500 ต่อเดือน", "4500/ด.".
+  m = text.match(/([\d,]{3,})\s*(?:บาท)?\s*(?:\/เดือน|\/ด\.?|ต่อเดือน)/);
+  if (m) return `${m[1]} THB/month`;
+  return null;
 }
 
 // Thai digits (๐-๙) → ASCII, so "๔,๕๐๐" parses like "4,500".
@@ -241,8 +252,10 @@ function normalizeDigits(s) {
 }
 
 function extractDeposit(text) {
-    // Covers ประกัน / ประกันห้อง / เงินประกัน / มัดจำ, with or without a comma or unit.
-      const m = text.match(/(?:ประกัน(?:ห้อง|ความเสียหาย)?|มัดจำ)[:\s]*(\d[\d,]*)\s*(เดือน|บาท)?/);
+    // Covers ประกัน / ประกันห้อง / ประกันความเสียหาย / ประกันล่วงหน้า /
+    // เงินประกัน / มัดจำ / ค่ามัดจำ / ค่าประกัน — with or without a comma or
+    // unit, and with or without a linking "เป็นเงิน" / "จำนวน".
+      const m = text.match(/(?:เงิน)?(?:ค่าประกัน|ประกัน|ค่ามัดจำ|มัดจำ)(?:ห้อง|ความเสียหาย|ล่วงหน้า)?[:\s]*(?:เป็นเงิน|จำนวน)?[:\s]*(\d[\d,]*)\s*(เดือน|บาท)?/);
       if (!m) return null;
       const raw = m[1].replace(/,+$/, "");
       const n = Number(raw.replace(/,/g, ""));
@@ -314,6 +327,121 @@ function detectDistance(text) {
     return { text: "Distance not stated \u2014 check the listing manually", link: null };
 }
 
+// ---------- Source link → post text ----------
+const FACEBOOK_HOST = /(?:^|\.)(?:facebook\.com|fb\.com)$/i;
+
+function isFacebookLink(raw) {
+  try { return FACEBOOK_HOST.test(new URL(raw).hostname); } catch { return false; }
+}
+
+// Share links like /share/p/<token> carry no post id, so samePost() can never match.
+function isShareLink(raw) {
+  try { return /^\/share\//i.test(new URL(raw).pathname); } catch { return false; }
+}
+
+// facebook.com/ or fb.com/ with no path is the home page; only trust tabs
+// that show a real post (not the home feed).
+function isFacebookHome(raw) {
+  try { const u = new URL(raw); return !u.pathname || u.pathname === "/"; } catch { return true; }
+}
+
+// The same post has many URL shapes (tracking params, ?story_fbid=, /posts/…),
+// so compare the post id when both sides carry one.
+function canonicalPostUrl(raw) {
+  try {
+    const url = new URL(raw);
+    url.hostname = url.hostname.toLowerCase().replace(/^(?:www\.|m\.|web\.)/, "");
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (!/^(?:story_fbid|fbid|multi_permalinks|v)$/i.test(key)) url.searchParams.delete(key);
+    }
+    url.pathname = url.pathname.replace(/\/+$/, "");
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function postIds(raw) {
+  const ids = new Set();
+  let url;
+  try { url = new URL(raw); } catch { return ids; }
+  for (const key of ["story_fbid", "fbid", "multi_permalinks"]) {
+    const value = url.searchParams.get(key);
+    if (value && /^\d+$/.test(value)) ids.add(value);
+  }
+  for (const match of url.pathname.matchAll(/\/(?:posts|permalink|videos)\/(\d+)/g)) ids.add(match[1]);
+  return ids;
+}
+
+function postHost(raw) {
+  try { return new URL(raw).hostname.toLowerCase().replace(/^(?:www\.|m\.|web\.|mbasic\.)/, ""); }
+  catch { return ""; }
+}
+
+// The group / page a post lives in, so two different groups that happen to
+// reuse a post id never look like the same post.
+function postScope(raw) {
+  try {
+    const path = new URL(raw).pathname.replace(/\/+$/, "");
+    const group = path.match(/^\/groups\/([^/]+)/i);
+    if (group) return `g:${group[1]}`;
+    const page = path.match(/^\/([^/]+)\/(?:posts|videos)\//i);
+    return page ? `p:${page[1]}` : "";
+  } catch {
+    return "";
+  }
+}
+
+function samePost(a, b) {
+  if (!a || !b) return false;
+  if (canonicalPostUrl(a) === canonicalPostUrl(b)) return true;
+  if (postHost(a) !== postHost(b)) return false;
+  const scopeA = postScope(a);
+  const scopeB = postScope(b);
+  if (scopeA && scopeB && scopeA !== scopeB) return false;
+  const idsA = postIds(a);
+  const idsB = postIds(b);
+  return idsA.size > 0 && [...idsA].some((id) => idsB.has(id));
+}
+
+// Ask the page the user is on first: it can read the post with their own
+// Facebook session. Only trust it when the tab really shows that post.
+function readTextFromTab(sourceLink) {
+  return new Promise((resolve) => {
+    if (!chrome.tabs?.query) return resolve("");
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs && tabs[0];
+      const tabUrl = tab && tab.url || "";
+      // For share links (/share/p/…), trust the active tab if it's Facebook
+      // and not the home feed, since the user opened that post themselves.
+      const trustedShareTab = isShareLink(sourceLink) && isFacebookLink(tabUrl) && !isFacebookHome(tabUrl);
+      if (!samePost(tabUrl, sourceLink) && !trustedShareTab) return resolve("");
+      chrome.tabs.sendMessage(tab.id, { type: "GET_POST_TEXT", url: sourceLink }, (res) => {
+        if (chrome.runtime.lastError) return resolve(""); // no content script in that tab
+        resolve((res && res.text) || "");
+      });
+    });
+  });
+}
+
+// Then let the background worker fetch the post with the user's cookies.
+async function pullPostText(sourceLink) {
+  const fromTab = await readTextFromTab(sourceLink);
+  if (fromTab) return fromTab;
+
+  const openTabMsg = "Couldn't read that post from the link \u2014 open the post in a tab, then press Translate again";
+
+  let reply;
+  try {
+    reply = await chrome.runtime.sendMessage({ type: "FETCH_POST_TEXT", url: sourceLink });
+  } catch {
+    throw new Error(openTabMsg);
+  }
+  if (!reply?.text) throw new Error(openTabMsg);
+  return reply.text;
+}
+
 // ---------- Run translate/extract ----------
 function bindRun() {
   els.runBtn.addEventListener("click", runExtraction);
@@ -335,7 +463,8 @@ function isMacPlatform() {
 }
 
 // ---------- Draft autosave (popup can close without warning) ----------
-let draftTimer = null;
+let restoredDraftText = '';
+  let draftTimer = null;
 function saveDraft() {
   clearTimeout(draftTimer);
   draftTimer = setTimeout(async () => {
@@ -350,7 +479,7 @@ function saveDraft() {
 }
 
 function bindDraft() {
-  els.thaiText.addEventListener("input", saveDraft);
+  els.thaiText.addEventListener("input", () => { restoredDraftText = ''; saveDraft(); });
   els.sourceLinkInput.addEventListener("input", saveDraft);
 }
 
@@ -360,14 +489,42 @@ function showSkeleton(on) {
 
 async function runExtraction() {
   if (els.runBtn.disabled) return; // Ctrl+Enter must not start a second run
-  const text = els.thaiText.value.trim();
-  if (currentMode === "text" && !text) {
-    showStatus(els.runStatus, "Paste some Thai text first.", "error");
-    toast("Paste some Thai text first", "error");
-    return;
-  }
+  let text = els.thaiText.value.trim();
+  const sourceLink = els.sourceLinkInput.value.trim() || null;
   if (currentMode === "image") {
     showStatus(els.runStatus, "Screenshot OCR isn't in this build \u2014 switch to Paste text.", "error");
+    return;
+  }
+  // If the text box holds the untouched restored draft, treat it as empty
+  // so the Source link flow can run.
+  const textIsPristineDraft = !!text && text === restoredDraftText;
+  // Empty text box but a Source link? Pull the post's own text from the link.
+  if ((!text || textIsPristineDraft) && sourceLink) {
+    if (!isFacebookLink(sourceLink)) {
+      showStatus(els.runStatus, "Source link must be a Facebook post.", "error");
+      toast("That source link isn't a Facebook post", "error");
+      return;
+    }
+    els.runBtn.disabled = true;
+    showStatus(els.runStatus, "Pulling the post text\u2026", "");
+    try {
+      text = await pullPostText(sourceLink);
+      els.thaiText.value = text;
+      saveDraft();
+      restoredDraftText = '';
+      toast("Post text pulled from the link");
+    } catch (err) {
+      console.warn(err);
+      showStatus(els.runStatus, err.message, "error");
+      toast("Couldn't read the post \u2014 paste the text instead", "error");
+      return;
+    } finally {
+      els.runBtn.disabled = false;
+    }
+  }
+  if (!text) {
+    showStatus(els.runStatus, "Paste some Thai text first.", "error");
+    toast("Paste some Thai text first", "error");
     return;
   }
 
@@ -380,7 +537,6 @@ async function runExtraction() {
     const translatedText = await translateLong(text, "th", "en");
     const norm = normalizeDigits(text); //extractors see ASCII digits; translation sees the original
     const distance = detectDistance(norm);
-    const sourceLink = els.sourceLinkInput.value.trim() || null;
 
     lastResult = {
       sourceText: text,
@@ -666,7 +822,7 @@ function renderSavedItem(l) {
         <span class="saved-item-price">${l.price ? escapeHtml(l.price) : "Price n/a"}</span>
         ${l.availability ? `<span class="saved-item-avail">${escapeHtml(l.availability)}</span>` : ""}
       </div>
-      <div class="saved-item-loc">&#128205; ${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
+      <div class="saved-item-loc">${l.location ? escapeHtml(l.location) : "Location n/a"}</div>
       ${l.distanceText ? `<div class="saved-item-dist">${escapeHtml(l.distanceText)}</div>` : ""}
       ${thumbs}
       <div class="saved-item-actions">
@@ -841,7 +997,7 @@ async function renderAlerts() {
       <li class="saved-item" data-id="${a.id}">
         <div class="saved-item-top">
           <span class="saved-item-price">${a.preferredArea ? escapeHtml(a.preferredArea) : "Any area"}</span>
-          <span class="saved-item-avail">${a.maxPrice ? `&#8804; ${a.maxPrice} THB` : "Any budget"}</span>
+          <span class="saved-item-avail">${a.maxPrice ? `${a.maxPrice} THB` : "Any budget"}</span>
         </div>
         <div class="saved-item-actions">
           <button class="chip-btn" data-action="remove">Remove</button>
