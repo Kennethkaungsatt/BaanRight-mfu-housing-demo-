@@ -48,7 +48,7 @@ data. Translation is the only network dependency (MyMemory API); map links and
 Nominatim are used only when the post contains them. This keeps the product free,
 instant and private — nothing is uploaded except the post text being translated.
 
-**Translation path** (`docs/design/sequence-fr-1.svg`): the post is split on line
+**Translation path** (`docs/design/sequence-fr-2.svg`): the post is split on line
 boundaries into ≤ 450-byte UTF-8 chunks, translated sequentially, then joined.
 Extraction always runs on the **original Thai text**, so Thai digits, phone
 formats and Thai unit words are read from the source, not from the translation.
@@ -63,30 +63,43 @@ translate, theme.
 
 ## 5. Golden Thread
 
-Requirements are numbered in the M2 SRS (`docs/M2-srs.*`). Every **Must** FR is
-traced from the problem to a design element, a prototype location and a test.
+Requirements and acceptance criteria are in the M2 SRS — [docs/M2-srs.pdf](M2-srs.pdf)
+(§3 functional, §4 non-functional, §7 traceability). Every **Must** FR is traced
+from the problem to a design element, to the place it is built, and to the
+evidence that it works.
 
-| Must FR | Requirement | Design element | Prototype page / section | Test and evidence |
+| Must FR | Requirement (SRS) | Design element | Where it is built | Test and evidence |
 |---|---|---|---|---|
-| FR-1 | Translate a Thai rental post into English | Translation client, chunking — `sequence-fr-1.svg`, `architecture.svg` | Translate tab → textarea → **Translate listing** | Demo posts 1–2 translate live; `translateChunk` tests cover success, quota text, HTTP 429 and other HTTP errors (4 cases) |
-| FR-2 | Extract rent, deposit, phone, location, availability | Field extractors — `architecture.svg`, step 6 of `sequence-fr-1.svg` | Translate tab → large price + **Details** grid; Saved → details panel | `tests/extractors.test`: deposit formats (months/baht/commas/ประกันห้อง/no unit), location (floor area never mistaken for location, trailing phone stripped), price/phone/availability — 11 tests pass |
-| FR-3 | Show distance from MFU | Distance detector + landmark table — `architecture.svg` | Translate tab → **Distance** row; Saved card subtitle | `tests/extractors.test`: map link keeps stated minutes and km (incl. decimals), Fah Thai landmark fallback, explicit "not stated" message |
-| FR-4 | Save a listing and reopen it | `SavedListing` — `data-model.svg` | **Save listing** → Saved tab → reload page | Manual: save demo post, reload, listing and its details are still there |
-| FR-5 | Search saved listings and shortlist them | `SavedListing.starred` — `data-model.svg` | Saved tab → search field, **★ Only** filter | Manual: 3 saved listings, query `ซอย`, star filter, remove |
-| FR-6 | Generate a Thai message for the landlord | Translation path (en→th) — `sequence-fr-1.svg` | Translate tab → **Ask the landlord** → tick questions → **Generate Thai message** → Copy | Manual: 5 questions → Thai output, copied to clipboard |
-| FR-7 | Attach photos to a listing, download later | `Photo` — `data-model.svg` | Translate tab → photo tray (**+ Add**, paste, drag & drop); Saved → download | Manual: add/paste/drag, duplicate rejected, downscaled to ≤1000 px, saved with the listing, downloaded |
-| FR-8 | Export saved listings to CSV | `SavedListing` flattening — `data-model.svg` | Saved tab → **Export CSV** | Manual: export → header + rows, 11 columns, rent rendered as `6000 THB/month` |
-| FR-9 | Prototype opens from one file with no build step | Static bundle — `architecture.svg` (web prototype group) | `prototype/index.html` | Double-clicked via `file://`: page and assets load, no server or build; service worker is skipped on `file://` by design |
+| FR-1 | Input a housing listing | Input form + optional source-link field — `architecture.svg` | Translate tab: textarea, **Load demo**, source link; extension popup paste and source-link pull | Manual: paste, demo post, source-link pull on a real post; empty input is rejected with a message |
+| FR-2 | Translate Thai housing listing | Translation client with chunking — `sequence-fr-2.svg` | Translate tab → **Translate listing**; the original Thai stays in the record and in Saved | Demo posts 1–2 translate live (AC-1, AC-2); `translateChunk` tests cover success, quota text, HTTP 429 and other HTTP errors (4 cases) |
+| FR-3 | Extract and save key housing information | Field extractors + `SavedListing` — `architecture.svg`, `data-model.svg` | Translate tab → price hero + **Details** grid; **Save listing** → Saved tab (reopen, details compare); a missing field shows “—” instead of a value | `tests/extractors.test` — 11/11: price, deposit formats, phone, location (floor area never mistaken for it), availability, distance; an absent field returns `null`, never an invented value (AC-8); manual save → reload → compare |
+| FR-4 | Generate Thai reply to landlord | Reply templates + en→th path — `sequence-fr-2.svg` | Translate tab → **Ask the landlord** → tick questions → **Generate Thai message** → **Copy** | Manual: 5 questions → Thai message generated (AC-1) and copied (AC-2) |
+| FR-5 | Translate selected text from a webpage | Content script + context menu — `architecture.svg` | Extension only: select Thai text → right-click → **Translate with BaanRight**; the popup opens pre-filled | Manual on a real Facebook housing post (both ACs) |
 
-**Should / Could FRs** (not required for the Golden Thread, implemented where noted):
+### Supporting features (beyond the five M2 FRs)
 
-| FR | Requirement | Status | Where |
+These were built because the five FRs would be impractical without them. They are
+not separate Must FRs in the SRS.
+
+| Feature | Why it exists | Where | Evidence |
 |---|---|---|---|
-| FR-10 | Pull the post text from a Facebook source link | Done (extension) | `background.js`, popup "Source link" field |
-| FR-11 | Translate selected text on any page via right-click | Done (extension) | `content.js`, `background.js` context menu |
-| FR-12 | Area + budget alerts | Done (prototype and popup) | Alerts tab |
-| FR-13 | Light/dark theme, follows the OS | Done (both) | header toggle; `theme` key |
-| FR-14 | Screenshot OCR | Not implemented | popup shows an explicit "not in this build" message instead of failing silently |
+| Distance from MFU | SRS §1.1: compare locations relative to campus | Translate **Distance** row; Saved card | `tests/extractors.test`: map link + km/min (incl. decimals), Fah Thai landmark, explicit “not stated” |
+| Saved search + ★ shortlist | FR-3 AC-7 “compare the saved options” needs filtering | Saved tab: search field, **★ Only** | Manual: 3 listings, query `ซอย`, star, remove |
+| Photos on a listing | A housing decision needs pictures | Photo tray (**+ Add**, paste, drag & drop) → Saved; download | Manual: duplicates rejected, ≤1000 px downscale, saved and re-downloaded |
+| CSV export | Compare off-device | Saved tab → **Export CSV** | Manual: 11 columns, rent as `6000 THB/month` |
+| Area + budget alerts | Keeps the target area and budget while browsing | Alerts tab | Manual CRUD |
+| Theme, drafts, offline shell | Usability on a phone at night; a tab can close mid-post | Header toggle, autosave, `sw.js` | Manual: theme persists; draft restored after reload |
+| Screenshot OCR | Explicitly out of scope (SRS §2.1, §6) | Popup says “not in this build” | — |
+
+### Non-functional requirements (SRS §4)
+
+| NFR | Target | Status / how checked |
+|---|---|---|
+| NFR-1 performance | Translation shown within 10 s | ≈3–4 s per demo post in our development runs; chunking keeps a long post to two requests |
+| NFR-2 performance | Extracted fields within 5 s after processing | Extraction is local and synchronous — the whole 11-test run executes in ~76 ms |
+| NFR-3 usability | First-time student pastes and starts within 30 s | Not formally timed with an unfamiliar user; the flow is paste → one button. Gap noted in §7 |
+| NFR-4 reliability | Error message, never an empty or misleading translation | Offline test per the SRS (“Couldn't translate that: Failed to fetch”); quota-text and HTTP 429 covered by unit tests |
+| NFR-5 security / privacy | Saved listings stay in the student's own browser storage | No server, no account; SRS browser-profile test passed (profile A saves → profile B sees nothing) |
 
 ## 6. Verification
 
@@ -104,8 +117,8 @@ traced from the problem to a design element, a prototype location and a test.
 
 ## 7. Limitations and honest gaps
 
-- **Screenshot OCR (FR-14)** is not implemented; the UI says so rather than
-  silently failing.
+- **Screenshot OCR** is explicitly out of scope in the SRS and not implemented;
+  the UI says so rather than silently failing.
 - **Translation quality** depends on MyMemory's free tier. There is a fair-use
   quota; on 429 the app shows the free-limit message. No offline translation.
 - **Distance** is what the landlord states (minutes), what a map link implies, or
@@ -117,7 +130,7 @@ traced from the problem to a design element, a prototype location and a test.
 
 ## 8. What is next
 
-1. OCR for screenshots (the one Must-adjacent gap).
+1. OCR for screenshots (once it moves into scope).
 2. A real distance calculation (routing API) instead of stated minutes.
 3. Optional account + sync for saved listings.
 4. Thai-language UI for landlords, so both sides of the conversation are served.

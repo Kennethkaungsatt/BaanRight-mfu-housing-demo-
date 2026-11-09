@@ -61,7 +61,7 @@ docs/
   design/
     architecture.svg          system architecture
     use-case.svg              actors and use cases
-    sequence-fr-1.svg         translate & extract sequence (Must FR)
+    sequence-fr-2.svg         translate & extract sequence (FR-2 + FR-3)
     data-model.svg            stored JSON shapes
 slides/
   demo-slides.html            demo deck (arrow keys; print → PDF)
@@ -93,23 +93,27 @@ HTTP 429, other statuses).
 | AI-Use Statement | [`docs/ai-use-statement.md`](docs/ai-use-statement.md) |
 | Architecture | [`docs/design/architecture.svg`](docs/design/architecture.svg) |
 | Use-case diagram | [`docs/design/use-case.svg`](docs/design/use-case.svg) |
-| Sequence (translate / extract) | [`docs/design/sequence-fr-1.svg`](docs/design/sequence-fr-1.svg) |
+| Sequence (translate / extract) | [`docs/design/sequence-fr-2.svg`](docs/design/sequence-fr-2.svg) |
 | Data model | [`docs/design/data-model.svg`](docs/design/data-model.svg) |
 | Demo slides | [`slides/demo-slides.html`](slides/demo-slides.html) |
-| Team Charter (M1) | `docs/M1-team-charter.pdf` |
-| SRS (M2) | `docs/M2-srs.pdf` |
+| Team Charter (M1) | [`docs/M1-team-charter.pdf`](docs/M1-team-charter.pdf) |
+| SRS (M2) | [`docs/M2-srs.pdf`](docs/M2-srs.pdf) |
 
 ## Team
 
-| Member | GitHub |
-|---|---|
-| Kenneth | [@Kennethkaungsatt](https://github.com/Kennethkaungsatt) |
-| Mun2ddd | [@mun2ddd](https://github.com/mun2ddd) |
-| thxbe | [@thxbe](https://github.com/thxbe) |
+| Member | Student ID | GitHub |
+|---|---|---|
+| Kaung Satt Thiha | 6931503006 | [@Kennethkaungsatt](https://github.com/Kennethkaungsatt) |
+| Min Thant Maung Maung | 6931503012 | — |
+| Kanokporn Pakchaipoom | 6931503020 | — |
+| Munir Sama | 6931503063 | [@mun2ddd](https://github.com/mun2ddd) |
+| Nipitpon Seehawong | 6931503109 | [@thxbe](https://github.com/thxbe) |
 
-Team roles, student IDs and meeting arrangements are recorded in the M1 Team
-Charter. Work reaches `main` through pull requests (for example the merge of PR #2 in
-the history); every member commits from their own account.
+Team roles, working agreements and the problem-validation interviews are in the
+[M1 Team Charter](docs/M1-team-charter.pdf). Requirements and acceptance criteria
+are in the [M2 SRS](docs/M2-srs.pdf). Work reaches `main` through pull requests
+(for example the merge of PR #2 in the history); every member commits from their
+own account.
 
 ## How it is built
 
