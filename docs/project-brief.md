@@ -229,7 +229,7 @@ and `Kennethkaungsatt` are the same GitHub account (`@Kennethkaungsatt`).
 
 | Member | Student ID | GitHub | Commits | Lines +/- | Files | Main area |
 |---|---|---|---|---|---|---|
-| Kaung Satt Thiha | 6931503006 | `@Kennethkaungsatt` (`kennethape` is the same account) | **11** | +5,965 / −345 | 33 | Web prototype, popup redesign, photo tray, docs, slides |
+| Kaung Satt Thiha | 6931503006 | `@Kennethkaungsatt`  | **11** | +5,965 / −345 | 33 | Web prototype, popup redesign, photo tray, docs, slides |
 | Munir Sama | 6931503063 | `@mun2ddd` | **27** (incl. 1 merge) | +3,903 / −3,427 | 14 | Extractor logic, tests, source-link, cleanup, PR #2 |
 | Nipitpon Seehawong | 6931503109 | `@thxbe` | **2** on `main` (+3 on unmerged `fix-ui-text`) | +6 / −2 on `main` | 2 | Content-script button, photo storage error handling |
 | Min Thant Maung Maung | 6931503012 | **not linked** | **0** | — | — | — |
