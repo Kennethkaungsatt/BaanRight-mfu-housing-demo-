@@ -1,0 +1,10 @@
+# Build output and local tooling
+dist/
+node_modules/
+.vercel/
+.freebuff/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp

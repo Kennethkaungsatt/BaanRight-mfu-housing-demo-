@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 700" width="1080" height="700" role="img" aria-label="Sequence diagram: student pastes a Thai post, the UI translates it in chunks through MyMemory, then extractors produce the structured details">
+  <title>Sequence — translate a Thai post (FR-1) and extract details (FR-2)</title>
+  <defs>
+    <marker id="s-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#48566b"/>
+    </marker>
+    <marker id="s-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d9e75"/>
+    </marker>
+    <style>
+      text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Sarabun,sans-serif}
+      .ttl{font-size:21px;font-weight:700;fill:#04342c}
+      .sub{font-size:12px;fill:#5a6170}
+      .part{font-size:12.5px;font-weight:700;fill:#04342c}
+      .msg{font-size:12px;fill:#33404f}
+      .lifeline{stroke:#9aa4b4;stroke-width:1.2;stroke-dasharray:5 5}
+      .req{stroke:#48566b;stroke-width:1.6;fill:none}
+      .res{stroke:#1d9e75;stroke-width:1.6;fill:none;stroke-dasharray:6 4}
+      .box{fill:#fff;stroke:#cfd5df}
+      .head{fill:#eef7f3;stroke:#9cc9ab}
+    </style>
+  </defs>
+
+  <rect width="1080" height="700" fill="#ffffff"/>
+  <text class="ttl" x="24" y="34">Translate &amp; extract — sequence for a Must FR</text>
+  <text class="sub" x="24" y="52">FR-1 (translate) with FR-2 (structured details) — same flow in the popup and in prototype/index.html.</text>
+
+  <!-- Participants -->
+  <g>
+    <rect class="head" x="30" y="74" width="140" height="46" rx="8"/>
+    <text class="part" x="100" y="94" text-anchor="middle">Student</text>
+    <text class="sub" x="100" y="110" text-anchor="middle">actor</text>
+
+    <rect class="head" x="230" y="74" width="150" height="46" rx="8"/>
+    <text class="part" x="305" y="94" text-anchor="middle">UI</text>
+    <text class="sub" x="305" y="110" text-anchor="middle">popup / prototype</text>
+
+    <rect class="head" x="440" y="74" width="160" height="46" rx="8"/>
+    <text class="part" x="520" y="94" text-anchor="middle">Translation client</text>
+    <text class="sub" x="520" y="110" text-anchor="middle">translateLong()</text>
+
+    <rect class="head" x="660" y="74" width="160" height="46" rx="8"/>
+    <text class="part" x="740" y="94" text-anchor="middle">MyMemory API</text>
+    <text class="sub" x="740" y="110" text-anchor="middle">external</text>
+
+    <rect class="head" x="880" y="74" width="170" height="46" rx="8"/>
+    <text class="part" x="965" y="94" text-anchor="middle">Extractors</text>
+    <text class="sub" x="965" y="110" text-anchor="middle">pure functions</text>
+  </g>
+
+  <!-- Lifelines -->
+  <g class="lifeline">
+    <line x1="100" y1="120" x2="100" y2="600"/>
+    <line x1="305" y1="120" x2="305" y2="600"/>
+    <line x1="520" y1="120" x2="520" y2="600"/>
+    <line x1="740" y1="120" x2="740" y2="600"/>
+    <line x1="965" y1="120" x2="965" y2="600"/>
+  </g>
+
+  <!-- Messages -->
+  <g>
+    <line class="req" x1="100" y1="150" x2="300" y2="150" marker-end="url(#s-ar)"/>
+    <text class="msg" x="110" y="142">1. paste Thai post, press “Translate listing”</text>
+
+    <line class="req" x1="305" y1="196" x2="515" y2="196" marker-end="url(#s-ar)"/>
+    <text class="msg" x="315" y="188">2. translateLong(text, “th”, “en”)</text>
+
+    <line class="req" x1="520" y1="250" x2="735" y2="250" marker-end="url(#s-ar)"/>
+    <text class="msg" x="530" y="242">3. GET /get?q=chunk&amp;langpair=th|en — chunk ≤ 450 bytes</text>
+    <text class="msg" x="530" y="258" style="fill:#5a6170">(repeat for each chunk, sequential)</text>
+
+    <line class="res" x1="740" y1="300" x2="525" y2="300" marker-end="url(#s-arr)"/>
+    <text class="msg" x="530" y="292">4. translatedText</text>
+
+    <line class="res" x1="520" y1="346" x2="310" y2="346" marker-end="url(#s-arr)"/>
+    <text class="msg" x="315" y="338">5. chunks joined → English text</text>
+
+    <line class="req" x1="305" y1="396" x2="960" y2="396" marker-end="url(#s-ar)"/>
+    <text class="msg" x="315" y="388">6. buildResult(sourceText) — extract from the ORIGINAL Thai text</text>
+
+    <line class="res" x1="965" y1="446" x2="310" y2="446" marker-end="url(#s-arr)"/>
+    <text class="msg" x="315" y="438">7. price · deposit · phone · location · availability · distance</text>
+
+    <line class="res" x1="305" y1="496" x2="105" y2="496" marker-end="url(#s-arr)"/>
+    <text class="msg" x="115" y="488">8. render price hero, details grid, distance; enable Save / Copy / Share</text>
+  </g>
+
+  <!-- Notes -->
+  <g>
+    <rect class="box" x="30" y="536" width="1020" height="66" rx="8" fill="#f7faf8"/>
+    <text class="sub" x="46" y="558">Long posts: split on line boundaries so each request stays ≤ 450 UTF-8 bytes, then concatenate results (NFR-1).</text>
+    <text class="sub" x="46" y="577">Failures: HTTP 429 / quota text / network error surface as a clear message — quota text is never shown as a translation (NFR-2).</text>
+    <text class="sub" x="46" y="596">The extraction step runs on the original Thai text so numbers and phone formats are read from the source, not the translation.</text>
+  </g>
+</svg>

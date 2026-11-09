@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 560" width="980" height="560" role="img" aria-label="BaanRight system architecture: two user surfaces, shared logic, external services and local storage">
+  <title>BaanRight — system architecture</title>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1d9e75"/>
+    </marker>
+    <style>
+      text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Sarabun,sans-serif}
+      .ttl{font-size:21px;font-weight:700;fill:#04342c}
+      .sub{font-size:12px;fill:#5a6170}
+      .grp{font-size:11px;font-weight:700;fill:#0f6e56;letter-spacing:.08em}
+      .b{font-size:13px;font-weight:700;fill:#04342c}
+      .s{font-size:11px;fill:#5a6170}
+      .arr{stroke:#1d9e75;stroke-width:2;fill:none}
+    </style>
+  </defs>
+
+  <rect width="980" height="560" fill="#ffffff"/>
+  <text class="ttl" x="24" y="36">BaanRight — system architecture</text>
+  <text class="sub" x="24" y="54">Two user surfaces share one set of extractors, one translation path and one storage shape.</text>
+
+  <!-- Extension group -->
+  <rect x="24" y="70" width="430" height="156" rx="10" fill="#f3f7f5" stroke="#cfd5df" stroke-dasharray="5 4"/>
+  <text class="grp" x="40" y="90">CHROME EXTENSION · MANIFEST V3</text>
+  <g>
+    <rect x="44" y="100" width="190" height="52" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="139" y="120" text-anchor="middle">Popup UI</text>
+    <text class="s" x="139" y="137" text-anchor="middle">popup.html · .js · .css</text>
+  </g>
+  <g>
+    <rect x="244" y="100" width="190" height="52" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="339" y="120" text-anchor="middle">Content script</text>
+    <text class="s" x="339" y="137" text-anchor="middle">content.js · selection → popup</text>
+  </g>
+  <g>
+    <rect x="44" y="162" width="190" height="52" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="139" y="182" text-anchor="middle">Service worker</text>
+    <text class="s" x="139" y="199" text-anchor="middle">background.js · context menus</text>
+  </g>
+  <g>
+    <rect x="244" y="162" width="190" height="52" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="339" y="182" text-anchor="middle">Photo helper</text>
+    <text class="s" x="339" y="199" text-anchor="middle">photo-add.html · .js</text>
+  </g>
+
+  <!-- Prototype group -->
+  <rect x="470" y="70" width="486" height="156" rx="10" fill="#f3f7f5" stroke="#cfd5df" stroke-dasharray="5 4"/>
+  <text class="grp" x="486" y="90">WEB PROTOTYPE · PROTOTYPE/</text>
+  <rect x="494" y="100" width="438" height="114" rx="8" fill="#fff" stroke="#cfd5df"/>
+  <text class="b" x="510" y="124">prototype/index.html + style.css + script.js</text>
+  <text class="s" x="510" y="144">Tabs: Translate · Saved · Alerts — plus reply templates</text>
+  <text class="s" x="510" y="162">Opens by double-click (file://), no build step, no server</text>
+  <text class="s" x="510" y="180">Responsive 360–1440 px, light + dark themes</text>
+  <text class="s" x="510" y="198">Same extractor rules and MyMemory calls as the extension</text>
+
+  <!-- Core logic -->
+  <rect x="24" y="252" width="932" height="148" rx="10" fill="#eef7f3" stroke="#9cc9ab"/>
+  <text class="grp" x="40" y="274">SHARED CORE LOGIC · NO BACKEND</text>
+  <g>
+    <rect x="44" y="286" width="214" height="94" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="151" y="306" text-anchor="middle">Field extractors</text>
+    <text class="s" x="151" y="324" text-anchor="middle">price · deposit · phone</text>
+    <text class="s" x="151" y="340" text-anchor="middle">location · availability</text>
+    <text class="s" x="151" y="356" text-anchor="middle">distance to MFU</text>
+  </g>
+  <g>
+    <rect x="274" y="286" width="214" height="94" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="381" y="306" text-anchor="middle">Translation client</text>
+    <text class="s" x="381" y="324" text-anchor="middle">translateLong(text, th, en)</text>
+    <text class="s" x="381" y="340" text-anchor="middle">≤ 450-byte chunks, sequential</text>
+    <text class="s" x="381" y="356" text-anchor="middle">quota / HTTP errors → toast</text>
+  </g>
+  <g>
+    <rect x="504" y="286" width="214" height="94" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="611" y="306" text-anchor="middle">Persistence</text>
+    <text class="s" x="611" y="324" text-anchor="middle">saved listings · drafts</text>
+    <text class="s" x="611" y="340" text-anchor="middle">photo tray · preferences</text>
+    <text class="s" x="611" y="356" text-anchor="middle">survives reload</text>
+  </g>
+  <g>
+    <rect x="734" y="286" width="214" height="94" rx="8" fill="#fff" stroke="#cfd5df"/>
+    <text class="b" x="841" y="306" text-anchor="middle">Rendering &amp; theme</text>
+    <text class="s" x="841" y="324" text-anchor="middle">tabs · cards · skeletons</text>
+    <text class="s" x="841" y="340" text-anchor="middle">toasts · share / copy</text>
+    <text class="s" x="841" y="356" text-anchor="middle">light + dark, responsive</text>
+  </g>
+
+  <!-- External -->
+  <rect x="24" y="436" width="470" height="94" rx="10" fill="#f3f7f5" stroke="#cfd5df" stroke-dasharray="5 4"/>
+  <text class="grp" x="40" y="458">EXTERNAL SERVICES</text>
+  <rect x="44" y="470" width="210" height="44" rx="8" fill="#fff" stroke="#cfd5df"/>
+  <text class="s" x="149" y="497" text-anchor="middle">MyMemory translation API</text>
+  <rect x="266" y="470" width="210" height="44" rx="8" fill="#fff" stroke="#cfd5df"/>
+  <text class="s" x="371" y="497" text-anchor="middle">Nominatim / map links</text>
+
+  <!-- Storage -->
+  <rect x="510" y="436" width="446" height="94" rx="10" fill="#f3f7f5" stroke="#cfd5df" stroke-dasharray="5 4"/>
+  <text class="grp" x="526" y="458">LOCAL STORAGE (NO ACCOUNT, NO SERVER)</text>
+  <rect x="530" y="470" width="406" height="44" rx="8" fill="#fff" stroke="#cfd5df"/>
+  <text class="s" x="733" y="497" text-anchor="middle">chrome.storage.local (extension) · localStorage (web)</text>
+
+  <!-- Arrows -->
+  <path class="arr" d="M239 226 L239 252" marker-end="url(#ar)"/>
+  <path class="arr" d="M713 226 L713 252" marker-end="url(#ar)"/>
+  <path class="arr" d="M259 400 L259 436" marker-end="url(#ar)"/>
+  <path class="arr" d="M733 400 L733 436" marker-end="url(#ar)"/>
+  <text class="s" x="245" y="243">corresponds</text>
+</svg>

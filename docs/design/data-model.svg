@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 700" width="980" height="700" role="img" aria-label="Data model: SavedListing contains photos, plus Alert and Preferences records, all stored as JSON in browser storage">
+  <title>BaanRight — data model (local JSON storage)</title>
+  <defs>
+    <marker id="d-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0f6e56"/>
+    </marker>
+    <style>
+      text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Sarabun,sans-serif}
+      .ttl{font-size:21px;font-weight:700;fill:#04342c}
+      .sub{font-size:12px;fill:#5a6170}
+      .ent{font-size:13px;font-weight:700;fill:#ffffff}
+      .head{fill:#0f6e56}
+      .field{font-size:12px;fill:#04342c}
+      .type{font-size:11.5px;fill:#5a6170}
+      .rel{stroke:#0f6e56;stroke-width:1.6;fill:none}
+      .relT{font-size:11.5px;fill:#0f6e56;font-weight:600}
+      .card{fill:#fff;stroke:#cfd5df}
+    </style>
+  </defs>
+
+  <rect width="980" height="700" fill="#ffffff"/>
+  <text class="ttl" x="24" y="34">Data model — local JSON, no backend</text>
+  <text class="sub" x="24" y="52">chrome.storage.local (extension) and localStorage (prototype) hold the same shapes, so a listing behaves identically on both surfaces.</text>
+
+  <!-- SavedListing -->
+  <g>
+    <rect class="card" x="40" y="80" width="440" height="470" rx="10"/>
+    <rect class="head" x="40" y="80" width="440" height="38" rx="10"/>
+    <rect class="head" x="40" y="104" width="440" height="14"/>
+    <text class="ent" x="58" y="105">SavedListing</text>
+    <text class="type" x="462" y="105" text-anchor="end" style="fill:#d8f5ea">one record per saved post</text>
+
+    <text class="field" x="58" y="148">id</text>              <text class="type" x="462" y="148" text-anchor="end">number (timestamp)</text>
+    <text class="field" x="58" y="172">savedAt</text>         <text class="type" x="462" y="172" text-anchor="end">ISO date string</text>
+    <text class="field" x="58" y="196">starred</text>         <text class="type" x="462" y="196" text-anchor="end">boolean — shortlist</text>
+    <text class="field" x="58" y="220">price</text>           <text class="type" x="462" y="220" text-anchor="end">string, e.g. “6000 THB/month”</text>
+    <text class="field" x="58" y="244">deposit</text>         <text class="type" x="462" y="244" text-anchor="end">string, e.g. “1 month(s) rent”</text>
+    <text class="field" x="58" y="268">location</text>        <text class="type" x="462" y="268" text-anchor="end">string (Thai, cleaned)</text>
+    <text class="field" x="58" y="292">contactPhone</text>    <text class="type" x="462" y="292" text-anchor="end">string (may hold several)</text>
+    <text class="field" x="58" y="316">availability</text>    <text class="type" x="462" y="316" text-anchor="end">string | null</text>
+    <text class="field" x="58" y="340">distanceText</text>    <text class="type" x="462" y="340" text-anchor="end">string — minutes / landmark / map</text>
+    <text class="field" x="58" y="364">distanceLink</text>    <text class="type" x="462" y="364" text-anchor="end">string | null</text>
+    <text class="field" x="58" y="388">sourceText</text>      <text class="type" x="462" y="388" text-anchor="end">string — original Thai post</text>
+    <text class="field" x="58" y="412">translatedText</text>  <text class="type" x="462" y="412" text-anchor="end">string — English translation</text>
+    <text class="field" x="58" y="436">sourceLink</text>      <text class="type" x="462" y="436" text-anchor="end">string | null — original post URL</text>
+    <text class="field" x="58" y="460">images</text>          <text class="type" x="462" y="460" text-anchor="end">Photo[] — attached photos</text>
+
+    <line x1="58" y1="478" x2="462" y2="478" stroke="#e3e8ef"/>
+    <text class="type" x="58" y="500">Stored under the key</text>
+    <text class="type" x="58" y="518" style="fill:#0f6e56;font-family:'SF Mono',Menlo,monospace">savedListings</text>
+    <text class="type" x="200" y="500">·</text>
+    <text class="type" x="212" y="518" style="fill:#0f6e56;font-family:'SF Mono',Menlo,monospace">draft</text>
+    <text class="type" x="262" y="500">holds the in-progress post</text>
+    <text class="type" x="58" y="536">Export = this array flattened to CSV (11 columns, incl. Starred)</text>
+  </g>
+
+  <!-- Photo -->
+  <g>
+    <rect class="card" x="600" y="80" width="330" height="150" rx="10"/>
+    <rect class="head" x="600" y="80" width="330" height="38" rx="10"/>
+    <rect class="head" x="600" y="104" width="330" height="14"/>
+    <text class="ent" x="618" y="105">Photo</text>
+    <text class="type" x="912" y="105" text-anchor="end" style="fill:#d8f5ea">embedded in a listing</text>
+
+    <text class="field" x="618" y="146">id</text>       <text class="type" x="912" y="146" text-anchor="end">number</text>
+    <text class="field" x="618" y="170">src</text>      <text class="type" x="912" y="170" text-anchor="end">data URL (JPEG, ≤1000 px)</text>
+    <text class="field" x="618" y="194">selected</text> <text class="type" x="912" y="194" text-anchor="end">boolean — include in save</text>
+    <text class="type" x="618" y="218">Tray stored separately until the listing is saved.</text>
+  </g>
+
+  <!-- Alert -->
+  <g>
+    <rect class="card" x="600" y="262" width="330" height="146" rx="10"/>
+    <rect class="head" x="600" y="262" width="330" height="38" rx="10"/>
+    <rect class="head" x="600" y="286" width="330" height="14"/>
+    <text class="ent" x="618" y="287">Alert (area + budget)</text>
+    <text class="type" x="912" y="287" text-anchor="end" style="fill:#d8f5ea">preference</text>
+
+    <text class="field" x="618" y="328">id</text>        <text class="type" x="912" y="328" text-anchor="end">number</text>
+    <text class="field" x="618" y="352">area</text>      <text class="type" x="912" y="352" text-anchor="end">string — e.g. “ซอยแม่จัน”</text>
+    <text class="field" x="618" y="376">maxPrice</text>  <text class="type" x="912" y="376" text-anchor="end">number — THB / month</text>
+    <text class="type" x="618" y="398">Key: searchAlerts</text>
+  </g>
+
+  <!-- Theme -->
+  <g>
+    <rect class="card" x="600" y="430" width="330" height="120" rx="10"/>
+    <rect class="head" x="600" y="430" width="330" height="38" rx="10"/>
+    <rect class="head" x="600" y="454" width="330" height="14"/>
+    <text class="ent" x="618" y="455">Theme preference</text>
+    <text class="type" x="912" y="455" text-anchor="end" style="fill:#d8f5ea">single value</text>
+
+    <text class="field" x="618" y="496">theme</text>  <text class="type" x="912" y="496" text-anchor="end">“light” | “dark”</text>
+    <text class="type" x="618" y="520">Falls back to the OS setting when unset.</text>
+  </g>
+
+  <!-- Relationships -->
+  <path class="rel" d="M480 460 L600 170" marker-end="url(#d-ar)"/>
+  <text class="relT" x="512" y="306" transform="rotate(-19 512 306)">1 .. * images</text>
+  <path class="rel" d="M480 520 L600 340" marker-end="url(#d-ar)" stroke-dasharray="5 4"/>
+  <text class="relT" x="505" y="452" transform="rotate(-24 505 452)">matches area / budget</text>
+
+  <text class="sub" x="40" y="600">No relational database and no server: each key holds a JSON document written by the UI and read back on launch.</text>
+  <text class="sub" x="40" y="620">Images are embedded as data URLs so a saved listing is self-contained and still renders offline.</text>
+  <text class="sub" x="40" y="640">Capacity: extension requests “unlimitedStorage”; the prototype trims photos and reports when the browser quota is hit.</text>
+</svg>
