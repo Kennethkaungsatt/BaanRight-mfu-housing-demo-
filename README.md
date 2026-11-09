@@ -104,8 +104,8 @@ HTTP 429, other statuses).
 | Member | Student ID | GitHub |
 |---|---|---|
 | Kaung Satt Thiha | 6931503006 | [@Kennethkaungsatt](https://github.com/Kennethkaungsatt) |
-| Min Thant Maung Maung | 6931503012 | — |
-| Kanokporn Pakchaipoom | 6931503020 | — |
+| Min Thant Maung Maung | 6931503012 | [@Skai-max67] (https://github.com/Skai-max67)|
+| Kanokporn Pakchaipoom | 6931503020 | [@MelleM] (https://github.com/MelleM686)|
 | Munir Sama | 6931503063 | [@mun2ddd](https://github.com/mun2ddd) |
 | Nipitpon Seehawong | 6931503109 | [@thxbe](https://github.com/thxbe) |
 
