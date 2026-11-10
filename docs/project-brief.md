@@ -239,8 +239,8 @@ on an unmerged branch, and a README that says what it is, who built it and how t
 | Kaung Satt Thiha | 6931503006 | `@Kennethkaungsatt` (`kennethape` is the same account) | **11** | +5,965 / −345 | 33 | Web prototype, popup redesign, photo tray, docs, slides |
 | Munir Sama | 6931503063 | `@mun2ddd` | **27** (incl. 1 merge) | +3,903 / −3,427 | 14 | Extractor logic, tests, source-link, cleanup, PR #2 |
 | Nipitpon Seehawong | 6931503109 | `@thxbe` | **5** | +16 / −5 | 4 | Content-script button, popup labels, photo storage error handling |
-| Min Thant Maung Maung | 6931503012 | **not linked** | **0** | — | — | — |
-| Kanokporn Pakchaipoom | 6931503020 | **not linked** | **0** | — | — | — |
+| Min Thant Maung Maung | 6931503012 | `@Skai-max67` | **0** | — | — | — |
+| Kanokporn Pakchaipoom | 6931503020 | `@MelleM686` | **0** | — | — | — |
 
 ```bash
 git shortlog -sne --all        # 4 identities (3 people; two are the same account)
@@ -281,10 +281,10 @@ git log --oneline main..origin/fix-ui-text
 - **Can answer:** how the in-page button is placed, why the mouseup guard is needed, what
   happens when storage is full, and why unmerged branch work does not count as delivered.
 
-### Min Thant Maung Maung · Kanokporn Pakchaipoom — **no commits, no linked account**
-The git history shows nothing for either name. That is a real risk in a review that matches
-contributions by account, so fill it deliberately rather than hoping nobody looks:
-- Add their GitHub handles to the README table (currently "—").
+### Min Thant Maung Maung · Kanokporn Pakchaipoom — **accounts linked, still no commits**
+Both handles are now in the README (`@Skai-max67`, `@MelleM686`), but the git history still
+shows no commits for either name — an account being listed is not the same as a contribution.
+That is a real risk in a review that matches work by account, so fix it deliberately:
 - Give each one a **visible, committed** task before 16 Nov. Safe options: run the manual
   acceptance script and commit `docs/acceptance-results.md`; record the NFR-3 timed test with
   3 first-time users; time NFR-1 over 3 trials and commit the numbers; own the Thai copy of
