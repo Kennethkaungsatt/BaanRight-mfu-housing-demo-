@@ -12,8 +12,11 @@ included — in one click.
 |---|---|
 | **Web prototype** | open [`prototype/index.html`](prototype/index.html) — double-click, no build step, no server |
 | **Live demo** | https://baanright-web.vercel.app/ |
-| **Chrome extension** | Load unpacked from this repository (see below) |
+| **Chrome extension** | load the [`extension/`](extension/) folder unpacked (see below) |
+| **Demo slides** | [`slides/demo-slides.pdf`](slides/demo-slides.pdf) · [HTML version](slides/demo-slides.html) |
 | **Final report** | [`docs/final-report.md`](docs/final-report.md) (includes the Golden Thread table) |
+| **Requirements** | [M1 charter](docs/M1-team-charter.pdf) · [M2 SRS](docs/M2-srs.pdf) |
+| **Project briefing** | [`docs/project-brief.md`](docs/project-brief.md) — FR/NFR, APIs, AI use, tests, who did what |
 
 ## Open the prototype
 
@@ -27,7 +30,7 @@ including saved listings, works offline.
 ## Install the Chrome extension
 
 1. Open `chrome://extensions` and turn on **Developer mode**.
-2. Click **Load unpacked** and select this folder.
+2. Click **Load unpacked** and select the **`extension/`** folder of this repository.
 3. Pin BaanRight to your toolbar — or select a Thai post and right-click →
    **Translate with BaanRight**.
 
@@ -51,26 +54,36 @@ including saved listings, works offline.
 
 ## Repository layout
 
+One file per document, newest version only — older versions live in the commit
+history, not in numbered copies.
+
 ```
-README.md                     this file
+README.md                     what it is, who built it, how to open it
 prototype/                    web prototype — index.html is the single entry point
   index.html  style.css  script.js  sw.js  manifest.json  icons/
+extension/                    Chrome extension — load this folder unpacked
+  manifest.json               MV3 manifest
+  popup.html  popup.js  popup.css        popup (Translate / Saved / Alerts)
+  background.js  content.js              context menus, in-page selection translate
+  photo-add.html  photo-add.js           save Facebook photos into a listing
+  icons/                                 extension icons
 docs/
+  M1-team-charter.pdf         team charter (M1)
+  M2-srs.pdf                  requirements + acceptance criteria (M2)
   final-report.md             M3 report + Golden Thread table
   ai-use-statement.md         where AI helped and how we checked it
+  project-brief.md            FR/NFR, APIs, AI use, tests, per-member work
   design/
     architecture.svg          system architecture
     use-case.svg              actors and use cases
     sequence-fr-2.svg         translate & extract sequence (FR-2 + FR-3)
     data-model.svg            stored JSON shapes
 slides/
-  demo-slides.html            demo deck (arrow keys; print → PDF)
-popup.html / popup.js / popup.css        extension popup (Translate / Saved / Alerts)
-background.js / content.js               context menus, in-page selection translate
-photo-add.html / photo-add.js            save Facebook photos into a listing
-manifest.json                            Chrome extension manifest (MV3)
-icons/                                   extension icons
-tests/extractors.test                    unit tests for the extractors
+  demo-slides.pdf             demo deck for the projector
+  demo-slides.html            same deck, arrow-key navigation
+  generate-pdf.sh             rebuild the PDF from the HTML (needs Chrome/Brave)
+tests/
+  extractors.test             unit tests for the extractors
 ```
 
 ## Tests
@@ -79,8 +92,8 @@ tests/extractors.test                    unit tests for the extractors
 node --test tests/extractors.test     # 11 tests, all passing (Node 20+)
 ```
 
-The suite loads the pure functions out of `popup.js` in an isolated `vm` context,
-so the shipped code is what is tested. It covers deposit formats (months, baht,
+The suite loads the pure functions out of `extension/popup.js` in an isolated `vm`
+context, so the shipped code is what is tested. It covers deposit formats (months, baht,
 commas, `ประกันห้อง`, no unit), Thai digits, location vs. floor area, trailing
 phone numbers, distance detection, and translation error handling (quota text,
 HTTP 429, other statuses).

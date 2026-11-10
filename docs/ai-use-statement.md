@@ -21,7 +21,7 @@ we wrote and test.
 |---|---|---|
 | UI markup and CSS | Scaffolding the popup and web layout (tabs, cards, detail grid), and iterating on the light/dark palette | Front-end member reviews and adjusts every screen |
 | Thai text extraction | Proposing regex variants for rent, deposit, phone and location, and Thai-digit normalisation | Member verified each pattern against real posts |
-| Tests | Drafting the `node:test` harness that slices the pure functions out of `popup.js` and cases for deposit/location/distance edge cases | Member extended the cases and runs them before every merge |
+| Tests | Drafting the `node:test` harness that slices the pure functions out of `extension/popup.js` and cases for deposit/location/distance edge cases | Member extended the cases and runs them before every merge |
 | Documentation | Outlining this report, the SRS structure and the slide deck | Team rewrote content to match what the code actually does |
 | Debugging | Explaining a failed pull of post text from Facebook and the MyMemory quota response | Member reproduced, fixed and committed |
 

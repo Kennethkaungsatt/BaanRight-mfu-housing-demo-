@@ -33,7 +33,7 @@ shortlist to compare.
 | Surface | What it is | How to open |
 |---|---|---|
 | Web prototype | The same workflow as a responsive web app (Translate / Saved / Alerts tabs, reply templates) | double-click `prototype/index.html`, or the live link in the README |
-| Chrome extension | Popup with the same tabs, plus in-page tools: right-click "Translate with BaanRight", source-link post pulling, photo capture | `chrome://extensions` → Developer mode → **Load unpacked** → repo root |
+| Chrome extension | Popup with the same tabs, plus in-page tools: right-click "Translate with BaanRight", source-link post pulling, photo capture | `chrome://extensions` → Developer mode → **Load unpacked** → the `extension/` folder |
 
 Both surfaces share the same extractor rules, the same MyMemory translation
 client and the same storage shape, so behaviour is identical: what the demo
@@ -104,7 +104,7 @@ not separate Must FRs in the SRS.
 ## 6. Verification
 
 1. **Automated:** `node --test tests/extractors.test` — **11 tests, 11 pass**
-   (0 fail). The suite loads the pure functions out of `popup.js` in a `vm`
+   (0 fail). The suite loads the pure functions out of `extension/popup.js` in a `vm`
    context, so the shipped code is what is tested.
 2. **Manual demo script** run on the prototype and the extension: demo post 1
    (rent 6000, deposit 1 month, phone 081-234-5678, 10 min from MFU), demo post 2
@@ -143,5 +143,5 @@ not separate Must FRs in the SRS.
 4. **Save listing** → Saved tab → search, star, export CSV.
 5. **Ask the landlord** → choose questions → **Generate Thai message** → copy.
 6. For the extension: `chrome://extensions` → Developer mode → **Load unpacked**
-   → this folder → open a Thai Facebook post → right-click → *Translate with
-   BaanRight*.
+   → the **`extension/`** folder → open a Thai Facebook post → right-click →
+   *Translate with BaanRight*.
