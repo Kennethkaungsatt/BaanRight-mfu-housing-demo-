@@ -189,6 +189,12 @@ input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: .75
 }
 .mini-btn:hover { background: var(--jade-50); border-color: var(--jade-100); transform: translateY(-1px); }
 .mini-btn.ghost { color: var(--ink-soft); }
+.mini-btn.danger,
+.mini-btn.ghost.danger {
+  color: #fff;
+  background: #d64545;
+  border-color: #d64545;
+}
 
 .chip-btn {
   border: 1px solid var(--line); background: var(--surface-2);

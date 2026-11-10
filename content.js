@@ -13,7 +13,8 @@ function removeButton() {
   }
 }
 
-document.addEventListener("mouseup", () => {
+document.addEventListener("mouseup", (e) => {
+  if (floatBtn && floatBtn.contains(e.target)) return; // ปล่อยเมาส์บนปุ่ม อย่าลบปุ่ม
   removeButton();
   const selection = window.getSelection();
   const text = selection ? selection.toString().trim() : "";
