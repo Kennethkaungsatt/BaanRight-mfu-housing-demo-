@@ -11,7 +11,7 @@ included — in one click.
 | | |
 |---|---|
 | **Web prototype** | open [`prototype/index.html`](prototype/index.html) — double-click, no build step, no server |
-| **Live demo** | https://baanright-web.vercel.app/ |
+| **Live demo** | https://baanright-web-seven.vercel.app/ |
 | **Chrome extension** | load the [`extension/`](extension/) folder unpacked (see below) |
 | **Demo slides** | [`slides/demo-slides.pdf`](slides/demo-slides.pdf) · [HTML version](slides/demo-slides.html) |
 | **Final report** | [`docs/final-report.md`](docs/final-report.md) (includes the Golden Thread table) |
