@@ -111,8 +111,12 @@ function fileToDataUrl(file, maxW = 1000) {
 }
 
 async function storeGet(keys) {
-  try { return await chrome.storage.local.get(keys); }
-  catch (e) { console.warn("storage get failed", e); return {}; }
+  try {
+    return await chrome.storage.local.get(keys);
+  } catch (e) {
+    console.warn("storage get failed", e);
+    return null;
+  }
 }
 async function storeSet(obj) {
   try { await chrome.storage.local.set(obj); return true; }
