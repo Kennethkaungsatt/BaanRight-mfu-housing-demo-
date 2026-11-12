@@ -69,8 +69,18 @@ we wrote and test.
 
 - AI assistance is limited to development-time help as described above. It is not
   part of the runtime behaviour except the MyMemory translation service.
-- No student work, personal data or third-party code was uploaded to an AI tool.
+- We did not knowingly share personal data (for example a real landlord's name or
+  phone number) with an AI tool. In-editor assistants can read the code files they
+  are used on, and we pasted code and example Thai posts into a chat model when
+  debugging.
 - Code written with AI help is identified by the commits and pull requests in
   this repository, where every change is traceable to a team member's account.
-- If any AI-assisted text ends up in the demo slides or this documentation, it has
-  been reviewed and edited by the team before submission.
+- The repository's contributor list also shows an account named `codebuff-team`.
+  [FILL IN: say honestly what it is, who used it, when, for what, and who reviewed
+  its commits. Example: "This is the AI coding tool Codebuff, used by NAME on DATE
+  to moved the extension files. NAME reviewed its commits before merging. It is not
+  a team member and we claim no individual credit for it." Delete this bracket.]
+- The outline and first drafts of this report, the SRS structure and the demo
+  slides were AI-assisted. The team rewrote and reviewed them before submission so
+  they match what the code actually does.
+  
