@@ -68,13 +68,13 @@ Requirements and acceptance criteria are in the M2 SRS — [docs/M2-srs.pdf](M2-
 from the problem to a design element, to the place it is built, and to the
 evidence that it works.
 
-| Must FR | Requirement (SRS) | Design element | Where it is built | Test and evidence |
-|---|---|---|---|---|
-| FR-1 | Input a housing listing | Input form + optional source-link field — `architecture.svg` | Translate tab: textarea, **Load demo**, source link; extension popup paste and source-link pull | Manual: paste, demo post, source-link pull on a real post; empty input is rejected with a message |
-| FR-2 | Translate Thai housing listing | Translation client with chunking — `sequence-fr-2.svg` | Translate tab → **Translate listing**; the original Thai stays in the record and in Saved | Demo posts 1–2 translate live (AC-1, AC-2); `translateChunk` tests cover success, quota text, HTTP 429 and other HTTP errors (4 cases) |
-| FR-3 | Extract and save key housing information | Field extractors + `SavedListing` — `architecture.svg`, `data-model.svg` | Translate tab → price hero + **Details** grid; **Save listing** → Saved tab (reopen, details compare); a missing field shows “—” instead of a value | `tests/extractors.test` — 11/11: price, deposit formats, phone, location (floor area never mistaken for it), availability, distance; an absent field returns `null`, never an invented value (AC-8); manual save → reload → compare |
-| FR-4 | Generate Thai reply to landlord | Reply templates + en→th path — `sequence-fr-2.svg` | Translate tab → **Ask the landlord** → tick questions → **Generate Thai message** → **Copy** | Manual: 5 questions → Thai message generated (AC-1) and copied (AC-2) |
-| FR-5 | Translate selected text from a webpage | Content script + context menu — `architecture.svg` | Extension only: select Thai text → right-click → **Translate with BaanRight**; the popup opens pre-filled | Manual on a real Facebook housing post (both ACs) |
+| Must FR | Problem it solves (§1) | Requirement (SRS) | Design element | Where it is built | Test and evidence |
+|---|---|---|---|---|---|
+| FR-1 | Details are buried in free-text Thai posts; students need a fast way to get a post into the app | Input a housing listing | Input form + optional source-link field — `architecture.svg` | Translate tab: textarea, **Load demo**, source link; extension popup paste and source-link pull | Manual: paste, demo post, source-link pull on a real post; empty input is rejected with a message |
+| FR-2 | Students who cannot read Thai cannot understand the post | Translate Thai housing listing | Translation client with chunking — `sequence-fr-2.svg` | Translate tab → **Translate listing**; the original Thai stays in the record and in Saved | Demo posts 1–2 translate live (AC-1, AC-2); `translateChunk` tests cover success, quota text, HTTP 429 and other HTTP errors (4 cases) |
+| FR-3 | Rent, deposit, phone and location take minutes to decode per post and get lost | Extract and save key housing information | Field extractors + `SavedListing` — `architecture.svg`, `data-model.svg` | Translate tab → price hero + **Details** grid; **Save listing** → Saved tab (reopen, details compare); a missing field shows “—” instead of a value | `tests/extractors.test` — 11/11: price, deposit formats, phone, location (floor area never mistaken for it), availability, distance; an absent field returns `null`, never an invented value (AC-8); manual save → reload → compare |
+| FR-4 | Students cannot write to a Thai-speaking landlord | Generate Thai reply to landlord | Reply templates + en→th path — `sequence-fr-2.svg` | Translate tab → **Ask the landlord** → tick questions → **Generate Thai message** → **Copy** | Manual: 5 questions → Thai message generated (AC-1) and copied (AC-2) |
+| FR-5 | Posts are read inside Facebook; copying text out slows students down until the good room is gone | Translate selected text from a webpage | Content script + context menu — `architecture.svg` | Extension only: select Thai text → right-click → **Translate with BaanRight**; the popup opens pre-filled | Manual on a real Facebook housing post (both ACs) |
 
 ### Supporting features (beyond the five M2 FRs)
 
@@ -110,8 +110,10 @@ not separate Must FRs in the SRS.
    (rent 6000, deposit 1 month, phone 081-234-5678, 10 min from MFU), demo post 2
    (rent 4500, deposit 2 months, map link), save → reload → search → star →
    export → reply → theme toggle.
-3. **Cross-check with the extension:** the same post produces the same fields in
-   the popup and the prototype, because both call the same extractor code.
+3. **Cross-check with the extension:** both demo posts were run on the popup and
+   the prototype and produce the same fields. The automated tests (step 1) run
+   against the extension's `extension/popup.js`; the prototype is checked
+   manually with the same posts.
 4. **Responsive check:** 360 / 768 / 1440 px widths — no horizontal overflow;
    dark theme contrast sampled on key text/background pairs.
 
