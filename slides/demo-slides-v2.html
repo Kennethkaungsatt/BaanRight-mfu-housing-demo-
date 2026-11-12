@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BaanRight — M3 presentation · 16RideRight</title>
+<style>
+  :root{
+    --jade-900:#04342c; --jade-600:#0f6e56; --jade-400:#1d9e75;
+    --mint:#58dcb0; --fog:#cfe8de; --ink:#062a23; --clay:#ffb59a;
+    --grad:linear-gradient(135deg,#04342c 0%,#0f6e56 55%,#1d9e75 100%);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--jade-900);
+    color:#fff;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Sarabun,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .slide{position:absolute;inset:0;display:none;padding:4.5vh 5.5vw 8vh;background:var(--grad);overflow:auto}
+  .slide.active{display:flex;flex-direction:column;justify-content:center}
+  .inner{width:100%;max-width:1160px;margin:0 auto}
+  .kicker{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);font-weight:700;margin:0 0 12px}
+  h1{font-size:clamp(38px,6vw,72px);line-height:1.05;margin:0 0 16px;letter-spacing:-.02em}
+  h2{font-size:clamp(24px,3.1vw,42px);line-height:1.15;margin:0 0 20px;letter-spacing:-.015em}
+  h3{font-size:18px;margin:0 0 6px;color:#fff}
+  p{font-size:clamp(15px,1.4vw,20px);line-height:1.5;color:#e8f7f1;margin:0 0 12px;max-width:66ch}
+  .lead{font-size:clamp(17px,1.8vw,25px);color:#d8f5ea}
+  .accent{color:var(--mint)}
+  ul{margin:0;padding-left:20px}
+  li{font-size:clamp(14px,1.35vw,19px);line-height:1.55;color:#e8f7f1;margin-bottom:8px}
+  .muted{color:#bfe3d6}
+  .small{font-size:13.5px;color:#bfe3d6;line-height:1.5}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+  .card{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:13px;padding:14px 16px}
+  .card h3{font-size:16.5px;margin-bottom:4px}
+  .card p{font-size:13.5px;line-height:1.45;color:#d8f5ea;margin:0}
+  .badge{display:inline-block;background:rgba(88,220,176,.18);border:1px solid var(--mint);color:var(--mint);
+         font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;margin-bottom:16px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:1px solid rgba(255,255,255,.18);vertical-align:top;line-height:1.4}
+  th{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mint);white-space:nowrap}
+  td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ok{color:var(--mint);font-weight:700}
+  .warn{color:var(--clay);font-weight:700}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+  .steps{counter-reset:s;list-style:none;padding:0}
+  .steps li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:11px}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:28px;height:28px;border-radius:50%;
+    background:var(--mint);color:var(--jade-900);font-weight:800;display:grid;place-items:center;font-size:14px}
+  .who{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+  .member{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 13px}
+  .member .nm{font-size:14.5px;font-weight:700;line-height:1.25;margin-bottom:3px}
+  .member .id{font-size:12px;color:#bfe3d6;font-variant-numeric:tabular-nums;margin-bottom:6px}
+  .member .gh{font-size:12.5px;color:var(--mint);font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+  .member .ct{font-size:12px;color:#bfe3d6;margin-top:6px}
+  .member .what{font-size:12.5px;line-height:1.4;color:#d8f5ea;margin-top:8px;border-top:1px solid rgba(255,255,255,.15);padding-top:7px}
+  .flow{display:flex;align-items:stretch;gap:8px;margin:10px 0 4px;flex-wrap:wrap}
+  .node{flex:1 1 0;min-width:118px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);
+        border-radius:11px;padding:11px 10px;font-size:12.5px;line-height:1.35}
+  .node b{display:block;font-size:13.5px;margin-bottom:3px;color:#fff}
+  .nsharp{--jade-900:#04342c}
+  .nav{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;
+       padding:10px 18px;background:linear-gradient(to top,rgba(4,20,16,.9),transparent);z-index:5}
+  .nav button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;
+       border-radius:9px;padding:6px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+  .nav button:hover{background:rgba(255,255,255,.22)}
+  .dots{display:flex;gap:5px;margin-left:auto}
+  .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.32);cursor:pointer}
+  .dot.on{background:var(--mint)}
+  .count{font-size:12.5px;color:#cfe8de;margin-left:10px;font-variant-numeric:tabular-nums}
+  .hint{position:fixed;right:18px;top:14px;font-size:12px;color:rgba(255,255,255,.55);z-index:5}
+  @media (max-width:900px){
+    .cols{grid-template-columns:1fr}
+    .cards{grid-template-columns:1fr 1fr}
+    .who{grid-template-columns:1fr 1fr}
+    .slide{padding:6vh 5vw 9vh}
+    table{font-size:12.5px}
+  }
+  @media print{
+    @page{size:A4 landscape;margin:8mm}
+    .nav,.hint{display:none}
+    body{background:#fff}
+    .slide{position:static;display:block !important;background:#fff;color:var(--ink);
+           padding:14px 18px;break-after:page;page-break-after:always;overflow:visible}
+    h1,h2,h3,p,li,td,th{color:#062a23}
+    .lead,.muted,.small{color:#33564c}
+    .kicker,.accent,.member .gh{color:#0f6e56}
+    .card,.member,.node{background:#f3f7f5;border-color:#cfd5df}
+    .card p,.member .what{color:#33564c;border-color:#d5dee6}
+    .badge{background:#e8f4ec;color:#0f6e56;border-color:#0f6e56}
+    th,td{border-color:#d5dee6}
+    .steps li::before{background:#0f6e56;color:#fff}
+    .ok{color:#0f6e56} .warn{color:#b4441a}
+    .dot{background:#cfd5df}
+  }
+</style>
+</head>
+<body>
+<div class="hint">← → navigate · press <b>p</b> for PDF</div>
+
+<!-- 1 ─ Cover -->
+<section class="slide active">
+  <div class="inner">
+    <span class="badge">M3 · Intro2SE 15031001 · Semester 1/2569 · Group 16</span>
+    <h1>BaanRight</h1>
+    <p class="lead">Thai rental posts, turned into decisions — rent, deposit, phone, location and distance from MFU, in one click.</p>
+    <p class="small" style="margin-top:22px">
+      Team <strong>16RideRight</strong> · Chrome extension + web prototype<br>
+      Repository: github.com/Kennethkaungsatt/BaanRight-mfu-housing-demo- · snapshot <span class="mono">m3-demo</span>
+    </p>
+  </div>
+</section>
+
+<!-- 2 ─ Team -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">The team</p>
+    <h2>16RideRight — who did what</h2>
+    <div class="who">
+      <div class="member">
+        <div class="nm">Kaung Satt Thiha</div>
+        <div class="id">6931503006</div>
+        <div class="gh">@Kennethkaungsatt</div>
+        <div class="ct">11 commits · +5,965 / −345 · 33 files</div>
+        <div class="what">Web prototype, popup redesign, photo tray, docs, slides</div>
+      </div>
+      <div class="member">
+        <div class="nm">Munir Sama</div>
+        <div class="id">6931503063</div>
+        <div class="gh">@mun2ddd</div>
+        <div class="ct">27 commits · +3,903 / −3,427 · 14 files</div>
+        <div class="what">Extractor logic, test suite, source link, repo cleanup, PR #2</div>
+      </div>
+      <div class="member">
+        <div class="nm">Nipitpon Seehawong</div>
+        <div class="id">6931503109</div>
+        <div class="gh">@thxbe</div>
+        <div class="ct">5 commits · +16 / −5 · 4 files</div>
+        <div class="what">In-page button, popup labels, photo storage errors, FR-5 bug fix</div>
+      </div>
+      <div class="member">
+        <div class="nm">Min Thant Maung Maung</div>
+        <div class="id">6931503012</div>
+        <div class="gh">@Skai-max67</div>
+        <div class="ct">0 commits</div>
+        <div class="what">Non-code work: user interviews (26–27 Aug), testing, translation review</div>
+      </div>
+      <div class="member">
+        <div class="nm">Kanokporn Pakchaipoom</div>
+        <div class="id">6931503020</div>
+        <div class="gh">@MelleM686</div>
+        <div class="ct">0 commits</div>
+        <div class="what">Non-code work: user interviews, Thai copy review, slide content</div>
+      </div>
+    </div>
+    <p class="small" style="margin-top:16px">
+      Numbers from <span class="mono">git log --author=… --numstat</span>. <span class="mono">kennethape</span> and <span class="mono">Kennethkaungsatt</span> are the same account.
+      An account being listed is not a contribution — two members have no commits in the history, and we say so rather than claim otherwise.
+    </p>
+  </div>
+</section>
+
+<!-- 3 ─ Problem -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">The problem</p>
+    <h2>MFU students who don't read Thai can't read the rental market</h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li>Housing is advertised in Thai Facebook groups: rent, deposit, phone and soi all buried in free text.</li>
+          <li>Translating by hand costs minutes per post — the good rooms are gone before you finish.</li>
+          <li>The details that decide a visit are exactly what machine translation mangles: deposit months, soi names, distance to campus.</li>
+          <li>Students arrive in year 1 with a dorm, then must find off-campus housing themselves.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card">
+          <h3>A typical post</h3>
+          <p style="font-family:Sarabun,sans-serif;line-height:1.75">
+            ห้องให้เช่า ซอยแม่จันใต้ 3<br>
+            ค่าเช่า 6000 บาท/เดือน<br>
+            ประกัน 1 เดือน<br>
+            ห่างจากมหาวิทยาลัย 10 นาที<br>
+            สนใจโทร 081-234-5678
+          </p>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <h3>What the student actually needs</h3>
+          <p>฿6,000 / month · 1 month deposit · 10 min from MFU · 081-234-5678</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 ─ Who needs it -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Who needs this product</p>
+    <h2>Primary user, and who we deliberately don't serve</h2>
+    <div class="cols">
+      <div>
+        <h3 style="color:var(--mint);margin-bottom:8px">Primary: MFU international students</h3>
+        <ul>
+          <li>Can't read Thai, must rent off-campus after year 1.</li>
+          <li>Hunting in Thai-language Facebook groups, often on a phone.</li>
+          <li>Needs to answer the landlord in Thai but can't write it.</li>
+        </ul>
+        <h3 style="color:var(--mint);margin:16px 0 8px">Secondary</h3>
+        <ul>
+          <li>Exchange / short-stay students arriving mid-semester.</li>
+          <li>Thai friends helping a foreign classmate shortlist rooms.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Three moments, one product</h3>
+          <p><b>1 · Find</b> — paste a post, read rent, deposit, phone, soi and distance in English.<br>
+             <b>2 · Compare</b> — save listings, search, shortlist with ★, export CSV.<br>
+             <b>3 · Reply</b> — tick the questions that matter, get a Thai message to paste into Messenger.</p>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <h3>Not our user (by design)</h3>
+          <p>Landlords and agents, full-time Thai renters, and anyone wanting a booking or payment platform — those are different products with different requirements.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 ─ FR -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Functional requirements</p>
+    <h2>5 Must FRs · 16 acceptance criteria — all implemented</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>ACs</th><th>Status</th><th>Where it lives</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td class="num">FR-1</td><td>Input a housing listing (paste Thai post text)</td><td class="num">1</td><td class="ok">Working</td><td>Translate tab: textarea, load demo, source link</td><td>Paste / demo / source-link pull; empty input rejected</td></tr>
+        <tr><td class="num">FR-2</td><td>Translate a Thai listing into English</td><td class="num">2</td><td class="ok">Working</td><td>MyMemory client, ≤450-byte chunking, Thai kept on screen</td><td>1.5–4 s per demo post; 4 unit tests</td></tr>
+        <tr><td class="num">FR-3</td><td>Extract and save key details: price, deposit, phone, location, availability</td><td class="num">8</td><td class="ok">Working</td><td>Price hero + details grid; Saved tab; missing field shows "—"</td><td>7 extractor tests; save → reload → compare</td></tr>
+        <tr><td class="num">FR-4</td><td>Generate a Thai reply to a landlord</td><td class="num">3</td><td class="ok">Working</td><td>Ask the landlord → 5 fixed questions → copy</td><td>Thai output generated and copied; app never sends (AC-3)</td></tr>
+        <tr><td class="num">FR-5</td><td>Translate selected text directly on a webpage</td><td class="num">2</td><td class="ok">Working</td><td><span class="mono">content.js</span> + context menu, popup opens pre-filled</td><td>Real Facebook housing post</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:14px">Source: <span class="mono">docs/M2-srs.pdf §3</span> · traceability: <span class="mono">docs/final-report.md §5</span> (Golden Thread)</p>
+  </div>
+</section>
+
+<!-- 6 ─ NFR -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Non-functional requirements</p>
+    <h2>5 NFRs — 4 measured, 1 honestly unverified</h2>
+    <table>
+      <thead><tr><th>ID</th><th>Kind</th><th>Target</th><th>How we checked</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td class="num">NFR-1</td><td>Performance</td><td>Translation shown within 10 s</td><td>Timed live requests, SRS trials</td><td><span class="ok">Pass</span> — ≈1.5 s short post, 3–4 s long</td></tr>
+        <tr><td class="num">NFR-2</td><td>Performance</td><td>Fields extracted within 5 s</td><td>Local extraction is synchronous</td><td><span class="ok">Pass</span> — sub-millisecond per post</td></tr>
+        <tr><td class="num">NFR-3</td><td>Usability</td><td>First use within 30 s, no help</td><td>Timed test with an unfamiliar student</td><td><span class="warn">Unverified</span> — not formally timed</td></tr>
+        <tr><td class="num">NFR-4</td><td>Reliability</td><td>Error message, never a misleading translation</td><td>Disconnect network, submit; quota + 429 tests</td><td><span class="ok">Pass</span> — explicit error shown</td></tr>
+        <tr><td class="num">NFR-5</td><td>Security / privacy</td><td>Saved listings only in the saver's browser</td><td>Profile A saves → profile B opens</td><td><span class="ok">Pass</span> — no server, no account, B sees nothing</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="margin-top:14px">
+      NFR-3 is stated as <b>unverified</b> in <span class="mono">docs/final-report.md §7</span> rather than claimed as passed. Understanding a target and measuring it are different things.
+    </p>
+  </div>
+</section>
+
+<!-- 7 ─ Features -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">What's built</p>
+    <h2>Features, on both surfaces</h2>
+    <div class="cards">
+      <div class="card"><h3>Translate &amp; extract</h3><p>Chunked th→en translation plus price, deposit, phone, location and availability pulled from free text.</p></div>
+      <div class="card"><h3>Distance to MFU</h3><p>Stated minutes, a detected map link, or the Fah Thai market landmark — never an empty cell.</p></div>
+      <div class="card"><h3>Saved list + shortlist</h3><p>Search, ★ filter, one-tap call, original post link, photo thumbnails, expandable details.</p></div>
+      <div class="card"><h3>Photo tray</h3><p>Add, paste or drag photos; downscaled to ≤1000 px, saved with the listing, downloadable later.</p></div>
+      <div class="card"><h3>Ask the landlord</h3><p>Five common questions turned into Thai and copied in one tap — the app never sends it.</p></div>
+      <div class="card"><h3>Export, alerts, theme</h3><p>CSV export for comparing, area + budget alerts, light/dark theme, autosaved drafts, PWA offline shell.</p></div>
+    </div>
+    <p class="small" style="margin-top:14px">
+      The last three are <em>supporting</em> features — we don't count them as extra Must FRs, so the scope stays honest.
+      Same workflow in the Chrome extension (inside Facebook) and the web prototype (any device).
+    </p>
+  </div>
+</section>
+
+<!-- 8 ─ Out of scope -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Scope discipline</p>
+    <h2>What we chose <em>not</em> to build</h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li><strong>Auto-searching / scraping Facebook groups</strong> — platform terms; the user pastes or right-clicks instead.</li>
+          <li><strong>Booking, reserving, rental payments</strong> — needs a payment provider and landlord agreements.</li>
+          <li><strong>Contacting landlords automatically</strong> — FR-4 AC-3: the student reviews and sends.</li>
+          <li><strong>Scam / red-flag detection</strong> — an unverifiable claim we can't honour.</li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li><strong>Legal or contract advice</strong> — outside our competence and a liability trap.</li>
+          <li><strong>Shared database, accounts, login</strong> — needs a backend; privacy by design (NFR-5).</li>
+          <li><strong>Screenshot OCR in this MVP</strong> — excluded by the SRS; the UI says "not in this build".</li>
+          <li><strong>Guaranteeing price or availability accuracy</strong> — the landlord is the source of truth.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small" style="margin-top:14px">15 explicit exclusions in <span class="mono">docs/M2-srs.pdf §6</span>. Saying no in writing is why the five FRs actually shipped.</p>
+  </div>
+</section>
+
+<!-- 9 ─ Tech -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Technology</p>
+    <h2>Vanilla JS, two surfaces, no backend</h2>
+    <div class="cols">
+      <div>
+        <table>
+          <tbody>
+            <tr><th>JavaScript ES2020</th><td class="num">≈2,650 lines</td></tr>
+            <tr><th>HTML5</th><td class="num">≈640 lines</td></tr>
+            <tr><th>CSS3</th><td class="num">≈1,410 lines</td></tr>
+            <tr><th>JSON (manifests)</th><td class="num">2 files</td></tr>
+            <tr><th>Node.js tests</th><td class="num">112 lines · 11 cases</td></tr>
+            <tr><th>Total (code)</th><td class="num">≈5,170 lines</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="flow">
+          <div class="node"><b>Popup UI</b>popup.html + css + js</div>
+          <div class="node"><b>Service worker</b>context menu, tabs, downloads</div>
+          <div class="node"><b>Content script</b>reads the page you're on</div>
+        </div>
+        <div class="flow">
+          <div class="node"><b>Shared core</b>extractors · translation client · storage</div>
+          <div class="node"><b>Web prototype</b>static PWA, offline shell</div>
+        </div>
+        <p class="small" style="margin-top:6px">
+          <strong>Not used:</strong> TypeScript, React/Vue, bundlers, Node server, database, ORM, auth provider, analytics.
+          Chrome MV3 + a static PWA is enough for this problem — every dependency we skip is one we don't have to maintain.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 ─ APIs -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">APIs</p>
+    <h2>One external API. One unused permission. Zero keys.</h2>
+    <table>
+      <thead><tr><th>#</th><th>Service</th><th>Purpose</th><th>Auth / cost</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><strong>MyMemory Translation API</strong></td><td>Thai → English machine translation, post split into ≤450-byte chunks</td><td>Free, no key, anonymous fair-use quota</td><td class="ok">Used at runtime</td></tr>
+        <tr><td class="num">2</td><td>Nominatim (OpenStreetMap)</td><td>Reverse geocoding</td><td>Free</td><td class="warn">Declared in manifest, never called</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px">
+      <strong>Chrome APIs:</strong> 6 families across 27 call sites — <span class="mono">storage.local</span> (8),
+      <span class="mono">runtime</span>, <span class="mono">contextMenus</span>, <span class="mono">tabs</span>,
+      <span class="mono">downloads</span>, <span class="mono">action.openPopup</span>.
+      Permissions: storage, contextMenus, activeTab, downloads, unlimitedStorage.
+    </p>
+    <p class="small" style="margin-top:8px">
+      <strong>Not APIs:</strong> Google Maps links are detected by regex inside the post; Facebook is read from the DOM the
+      user is already viewing — no Graph API, no token, no group scraping. The unused Nominatim permission is a known gap
+      we list in the report instead of quietly leaving it.
+    </p>
+  </div>
+</section>
+
+<!-- 11 ─ AI usage -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">AI usage</p>
+    <h2>No generative model in the product</h2>
+    <div class="cols">
+      <div>
+        <h3 style="color:var(--mint);margin-bottom:8px">At runtime</h3>
+        <ul>
+          <li>Translation only, via MyMemory — a machine-translation service that receives text and returns text.</li>
+          <li>Extraction is <strong>rule-based</strong> (regex + Thai unit words), as the SRS requires. No LLM decides a price.</li>
+          <li>That makes answers deterministic and testable — which is why we can run 11 tests on it.</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:var(--mint);margin-bottom:8px">During development</h3>
+        <ul>
+          <li><strong>Claude</strong> (27 Aug) — extension development: translation, extraction, storage, feature suggestions.</li>
+          <li><strong>ChatGPT</strong> (27 Aug) — organising the SRS into FRs and NFRs.</li>
+          <li><strong>Codebuff</strong> (9–12 Nov) — M3 deliverables: web prototype, report, diagrams, deck, README, link and asset verification.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small" style="margin-top:16px">
+      Everything AI produced was re-read, syntax-checked and tested before it landed; where output didn't match the
+      requirements we rewrote it (logged in M2 §8). Disclosure: <span class="mono">docs/ai-use-statement.md</span>.
+      Known weakness: the AI log is per-tool prose, not per-prompt.
+    </p>
+  </div>
+</section>
+
+<!-- 12 ─ Golden thread / demo -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Golden thread · live demo</p>
+    <h2>Four minutes, requirement by requirement</h2>
+    <div class="cols">
+      <div>
+        <ol class="steps">
+          <li><strong>Load demo → Translate</strong> — English plus rent, deposit, phone, location, distance. <span class="muted">FR-1, FR-2, FR-3</span></li>
+          <li><strong>Point at the details grid</strong> — missing fields show a dash; we never invent a value. <span class="muted">FR-3 AC-8</span></li>
+          <li><strong>Save → reload → search → ★ → CSV</strong> — compare options side by side. <span class="muted">FR-3 AC-7</span></li>
+          <li><strong>Ask the landlord → Thai message → copy</strong> — the app never sends it for you. <span class="muted">FR-4</span></li>
+          <li><strong>Extension:</strong> select Thai text on a Facebook post → right-click → Translate. <span class="muted">FR-5</span></li>
+        </ol>
+      </div>
+      <div>
+        <div class="card">
+          <h3>The closing line</h3>
+          <p>"OCR and scam detection are explicitly out of scope in our SRS — the UI says so rather than pretending."</p>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <h3>If the network fails on stage</h3>
+          <p>The prototype ships with demo posts and an offline shell; the error path is itself a test (NFR-4), not a crash.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 ─ Testing -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Quality</p>
+    <h2>Tested where it matters — 11/11 passing</h2>
+    <div class="cols">
+      <div>
+        <h3 style="color:var(--mint);margin-bottom:8px">Automated · <span class="mono">node --test tests/extractors.test</span></h3>
+        <ul>
+          <li>Suite loads the <strong>pure functions out of the shipped <span class="mono">popup.js</span></strong> — the tested code is the code that ships.</li>
+          <li>Deposit formats, Thai digits ๐–๙, floor area vs. location, trailing phone numbers.</li>
+          <li>Translation failures: quota text returned with HTTP 200, 429, other statuses.</li>
+          <li><strong>11 tests · 11 pass · 0 fail · ≈75 ms</strong></li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:var(--mint);margin-bottom:8px">Manual</h3>
+        <ul>
+          <li>2 demo posts × 2 surfaces, 9-step script.</li>
+          <li>Real Facebook housing posts in the extension.</li>
+          <li>Responsive at 360 / 768 / 1440 px; dark-theme contrast checked.</li>
+          <li>Offline, empty input, Ctrl/Cmd+Enter, photo add/paste/dedupe.</li>
+        </ul>
+        <p class="small" style="margin-top:10px"><strong>Known gaps:</strong> FR-5 is manual-only, and there is no CI — tests run locally before a merge.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 ─ Limits & next -->
+<section class="slide">
+  <div class="inner">
+    <p class="kicker">Honest limits &amp; next</p>
+    <h2>What isn't there yet</h2>
+    <div class="cols">
+      <div>
+        <ul>
+          <li><strong>Screenshot OCR</strong> — excluded by the SRS; the UI says "not in this build".</li>
+          <li><strong>Translation</strong> — free MyMemory tier, fair-use quota, no offline model.</li>
+          <li><strong>Distance</strong> — the landlord's figure or a landmark estimate, not a routed walk.</li>
+          <li><strong>Storage</strong> — browser only, no account, no sync between devices.</li>
+          <li><strong>NFR-3</strong> — the 30-second first-use target is still unmeasured.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card">
+          <h3>Next</h3>
+          <p>OCR for screenshots · real routing distance from MFU · optional account + sync · Thai UI for landlords.</p>
+        </div>
+        <div class="card" style="margin-top:10px">
+          <h3>Before the review</h3>
+          <p>Run the NFR-3 timed test with three first-time users, and remove or use the unused Nominatim permission.</p>
+        </div>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:24px">Thank you — questions?</p>
+    <p class="small">Team 16RideRight · prototype <span class="mono">prototype/index.html</span> · extension <span class="mono">extension/</span> · report <span class="mono">docs/final-report.md</span></p>
+  </div>
+</section>
+
+<div class="nav">
+  <button id="prev" type="button">← Back</button>
+  <button id="next" type="button">Next →</button>
+  <span class="count"><span id="cur">1</span>/<span id="total">14</span></span>
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dots = document.getElementById('dots');
+  var cur = document.getElementById('cur');
+  document.getElementById('total').textContent = String(slides.length);
+  var i = 0;
+
+  slides.forEach(function (_, n) {
+    var d = document.createElement('span');
+    d.className = 'dot' + (n === 0 ? ' on' : '');
+    d.title = 'Slide ' + (n + 1);
+    d.addEventListener('click', function () { show(n); });
+    dots.appendChild(d);
+  });
+
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle('on', k === i); });
+    cur.textContent = String(i + 1);
+    if (history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  document.getElementById('next').addEventListener('click', function () { show(i + 1); });
+  document.getElementById('prev').addEventListener('click', function () { show(i - 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); window.print(); }
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('button') || e.target.closest('.dot') || e.target.closest('a')) return;
+    show(i + 1);
+  });
+
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  show(isNaN(start) ? 0 : start - 1);
+})();
+</script>
+</body>
+</html>
