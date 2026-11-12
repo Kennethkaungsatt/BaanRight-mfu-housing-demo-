@@ -60,7 +60,7 @@ async function ingest(files) {
       okCount++;
     } catch (err) {
       console.warn(err);
-      toast(`Couldn't read ${file.name || "image"}`, "error");
+      toast(`Could not add ${file.name || "image"} to your tray`, "error");
     }
   }
   if (okCount) {
