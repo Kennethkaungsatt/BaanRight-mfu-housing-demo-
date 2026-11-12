@@ -47,8 +47,13 @@ async function ingest(files) {
   for (const file of files) {
     try {
       const src = await fileToDataUrl(file);
-      const stored = await storeGet("photoTray");
-      const tray = stored.photoTray || [];
+     const stored = await storeGet("photoTray");
+
+if (!stored) {
+  throw new Error("Could not read photo tray from storage");
+}
+
+const tray = stored.photoTray || [];
       if (tray.some((p) => p.src === src)) continue;
       tray.unshift({ id: Date.now() + Math.random(), src, selected: true });
       const saved = await storeSet({ photoTray: tray });
