@@ -19,11 +19,15 @@ we wrote and test.
 
 | Area | How AI was used | Human owner |
 |---|---|---|
-| UI markup and CSS | Scaffolding the popup and web layout (tabs, cards, detail grid), and iterating on the light/dark palette | Front-end member reviews and adjusts every screen |
-| Thai text extraction | Proposing regex variants for rent, deposit, phone and location, and Thai-digit normalisation | Member verified each pattern against real posts |
-| Tests | Drafting the `node:test` harness that slices the pure functions out of `extension/popup.js` and cases for deposit/location/distance edge cases | Member extended the cases and runs them before every merge |
-| Documentation | Outlining this report, the SRS structure and the slide deck | Team rewrote content to match what the code actually does |
-| Debugging | Explaining a failed pull of post text from Facebook and the MyMemory quota response | Member reproduced, fixed and committed |
+| Web prototype (`prototype/`) | Codebuff built the complete web app: translate, extract, save, search, CSV export, alerts | Kaung Satt Thiha ran and reviewed it, then committed it |
+| UI markup and CSS (extension popup) | Chat assistants scaffolded the popup layout (tabs, cards, detail grid) and iterated on the light/dark palette | Front-end member reviews and adjusts every screen |
+| Thai text extraction | Chat assistants proposed regex variants for rent, deposit, phone and location, and Thai-digit normalisation | Member verified each pattern against real posts |
+| Tests | Chat assistants drafted the `node:test` harness that slices the pure functions out of `extension/popup.js` and cases for deposit/location/distance edge cases | Member extended the cases and runs them before every merge |
+| Documentation | Codebuff wrote the final report (including the Golden Thread and NFR table), this statement, `docs/project-brief.md`, the README and four SVG diagrams. Chat assistants outlined the SRS structure | Kaung Satt Thiha reviewed and committed the documents; the team is responsible for their content |
+| Demo slides | Codebuff built `slides/demo-slides.html`, the PDF and `generate-pdf.sh` | Kaung Satt Thiha |
+| Repository work | Codebuff moved the extension into `extension/` and updated paths, merged the `fix-ui-text` branch (including an FR-5 fix), merged teammates' commits and tagged `m3-demo` | Kaung Satt Thiha |
+| Code audit | Codebuff read the extension source and reported two defects: an unused `nominatim` permission, and MyMemory quota warnings returned with HTTP 200 | Kaung Satt Thiha |
+| Debugging | Chat assistants explained a failed pull of post text from Facebook and the MyMemory quota response | Member reproduced, fixed and committed |
 
 ## 3. What worked
 
@@ -73,14 +77,15 @@ we wrote and test.
   phone number) with an AI tool. In-editor assistants can read the code files they
   are used on, and we pasted code and example Thai posts into a chat model when
   debugging.
-- Code written with AI help is identified by the commits and pull requests in
-  this repository, where every change is traceable to a team member's account.
-- The repository's contributor list also shows an account named `codebuff-team`.
-  [FILL IN: say honestly what it is, who used it, when, for what, and who reviewed
-  its commits. Example: "This is the AI coding tool Codebuff, used by NAME on DATE
-  to moved the extension files. NAME reviewed its commits before merging. It is not
-  a team member and we claim no individual credit for it." Delete this bracket.]
-- The outline and first drafts of this report, the SRS structure and the demo
-  slides were AI-assisted. The team rewrote and reviewed them before submission so
-  they match what the code actually does.
+- **Codebuff (AI coding agent), 9–12 Nov 2026.** The repository's contributor list
+  shows an account named `codebuff-team`. This is the AI coding tool Codebuff,
+  run by Kaung Satt Thiha (@Kennethkaungsatt). It is not a team member and we
+  claim no individual credit for it. Its work is listed in §2: the web
+  prototype, the documentation, the demo slides, repository restructuring and a
+  code audit. It also found two defects in the extension: an unused `nominatim`
+  permission, and MyMemory quota warnings returned with HTTP 200.
+- Codebuff did not write the extension feature code or the M1 and M2 PDFs, and it
+  was not used to test the extension in a live Chrome profile.
+- The team is responsible for everything in this repository. Kaung Satt Thiha
+  reviewed Codebuff's output before committing it.
   
