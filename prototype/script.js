@@ -1182,6 +1182,28 @@ function renderComparison() {
     return;
   }
   const value = (v) => v === undefined || v === null || String(v).trim() === "" ? "—" : escapeHtml(String(v));
+  // Prices are stored as strings such as "3,500 THB/month".
+  // Only listings with a readable numeric rent are included in the price insight.
+  const monthlyRent = (listing) => {
+    const raw = String(listing.price || "");
+    const digits = raw.replace(/[^0-9]/g, "");
+    return /THB|บาท|month|เดือน/i.test(raw) && digits ? Number(digits) : null;
+  };
+  const pricedListings = listings
+    .map((listing, index) => ({ listing, index, rent: monthlyRent(listing) }))
+    .filter(item => Number.isFinite(item.rent) && item.rent > 0);
+  const lowestRent = pricedListings.length >= 2
+    ? Math.min(...pricedListings.map(item => item.rent))
+    : null;
+  const lowestIndexes = lowestRent === null
+    ? []
+    : pricedListings.filter(item => item.rent === lowestRent).map(item => item.index);
+  const money = (amount) => `฿${amount.toLocaleString("en-US")}`;
+  const priceInsight = lowestRent === null ? "" : `
+    <div class="compare-price-insight" role="status">
+      <strong>Lowest monthly rent: ${money(lowestRent)}</strong>
+      <span>${lowestIndexes.length > 1 ? "There is a tie for the lowest rent." : `Room ${lowestIndexes[0] + 1} has the lowest rent.`}</span>
+    </div>`;
   const photoRow = listings.map(l => {
     const src = l.images?.[0];
     return `<td>${src ? `<img class="compare-photo" src="${escAttr(src)}" alt="Saved room photo" />` : '<span class="hint">No photo</span>'}</td>`;
@@ -1194,10 +1216,18 @@ function renderComparison() {
     ["Availability", "availability"],
     ["Contact", "contactPhone"]
   ];
-  els.compareContent.innerHTML = `<table class="compare-table">
-    <thead><tr><th scope="col">Feature</th>${listings.map((l, i) => `<th scope="col">Room ${i + 1}<button type="button" class="compare-remove" data-compare-remove="${escAttr(String(l.id))}" aria-label="Remove room ${i + 1}">×</button></th>`).join("")}</tr></thead>
+  const rentDifferenceRow = lowestRent === null ? "" : `
+    <tr><th scope="row">Difference from lowest rent</th>${listings.map((l, index) => {
+      const rent = monthlyRent(l);
+      if (rent === null) return "<td>—</td>";
+      const difference = rent - lowestRent;
+      return `<td class="${difference === 0 ? "compare-best-price" : ""}">${difference === 0 ? "Lowest rent" : `+${money(difference)}/month`}</td>`;
+    }).join("")}</tr>`;
+  els.compareContent.innerHTML = `${priceInsight}<table class="compare-table">
+    <thead><tr><th scope="col">Feature</th>${listings.map((l, i) => `<th scope="col">Room ${i + 1}${lowestIndexes.includes(i) ? '<span class="compare-best-badge">Lowest rent</span>' : ''}<button type="button" class="compare-remove" data-compare-remove="${escAttr(String(l.id))}" aria-label="Remove room ${i + 1}">×</button></th>`).join("")}</tr></thead>
     <tbody><tr><th scope="row">Photo</th>${photoRow}</tr>
-    ${rows.map(([label, key]) => `<tr><th scope="row">${label}</th>${listings.map(l => `<td>${value(l[key])}</td>`).join("")}</tr>`).join("")}
+    ${rows.map(([label, key]) => `<tr><th scope="row">${label}</th>${listings.map((l, index) => `<td class="${key === "price" && lowestIndexes.includes(index) ? "compare-best-price" : ""}">${value(l[key])}</td>`).join("")}</tr>`).join("")}
+    ${rentDifferenceRow}
     <tr><th scope="row">Original post</th>${listings.map(l => `<td>${/^https?:\/\//i.test(l.sourceLink || "") ? `<a href="${escAttr(l.sourceLink)}" target="_blank" rel="noopener noreferrer">View post</a>` : "—"}</td>`).join("")}</tr>
     </tbody></table>`;
   els.compareContent.querySelectorAll("[data-compare-remove]").forEach(button =>
