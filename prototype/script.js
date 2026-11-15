@@ -65,6 +65,7 @@ let lastResult = null;
 let expandedSavedId = null;   // which saved item currently has details open
 let savedQuery = "";
 let shortlistOnly = false;
+const compareIds = new Set();
 let photoTray = [];           // { id, src, selected } — photos waiting to be attached
 let deferredInstallPrompt = null;
 
@@ -726,6 +727,17 @@ function bindSavedToolbar() {
     renderSaved();
   });
   els.exportBtn.addEventListener("click", exportSaved);
+  els.compareSelectedBtn.addEventListener("click", () => {
+    if (compareIds.size < 2) return;
+    els.comparePanel.classList.remove("hidden");
+    renderComparison();
+    els.comparePanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.clearCompareBtn.addEventListener("click", () => {
+    compareIds.clear();
+    els.comparePanel.classList.add("hidden");
+    renderSaved();
+  });
 }
 
 function matchesQuery(l, q) {
@@ -737,6 +749,7 @@ function matchesQuery(l, q) {
 
 function renderSavedItem(l) {
   const isExpanded = expandedSavedId === l.id;
+  const isCompared = compareIds.has(String(l.id));
   const sourceLinkRow = l.sourceLink
     ? `<a class="chip-btn chip-link" href="${escAttr(l.sourceLink)}" target="_blank" rel="noopener">View original post</a>`
     : "";
@@ -777,6 +790,7 @@ function renderSavedItem(l) {
       ${l.distanceText ? `<div class="saved-item-dist">${escapeHtml(l.distanceText)}</div>` : ""}
       ${thumbs}
       <div class="saved-item-actions">
+        <label class="compare-check"><input type="checkbox" data-action="compare" ${isCompared ? "checked" : ""} ${!isCompared && compareIds.size >= 3 ? "disabled" : ""} /> Compare room</label>
         <button class="chip-btn" data-action="toggle-details">${isExpanded ? "Hide details" : "View details"}</button>
         ${phone ? `<button class="chip-btn" data-action="call" data-phone="${escAttr(phone)}">Call landlord</button>` : ""}
         ${sourceLinkRow}
@@ -789,6 +803,8 @@ function renderSavedItem(l) {
 
 function renderSaved() {
   const savedListings = storageGet("savedListings", []);
+  const existingIds = new Set(savedListings.map(l => String(l.id)));
+  for (const id of compareIds) if (!existingIds.has(id)) compareIds.delete(id);
   const filtered = savedListings
     .filter((l) => matchesQuery(l, savedQuery))
     .filter((l) => (!shortlistOnly || l.starred))
@@ -797,6 +813,20 @@ function renderSaved() {
   els.savedEmpty.classList.toggle("hidden", savedListings.length > 0);
   els.noMatches.classList.toggle("hidden", !(savedListings.length > 0 && filtered.length === 0));
   els.savedList.innerHTML = filtered.map(renderSavedItem).join("");
+  els.compareSelectedBtn.textContent = `⚖ Compare selected (${compareIds.size})`;
+  els.compareSelectedBtn.disabled = compareIds.size < 2;
+  if (compareIds.size < 2) els.comparePanel.classList.add("hidden");
+  else if (!els.comparePanel.classList.contains("hidden")) renderComparison();
+  els.savedList.querySelectorAll('[data-action="compare"]').forEach(box =>
+    box.addEventListener("change", e => {
+      const id = e.target.closest(".saved-item").dataset.id;
+      if (e.target.checked) {
+        if (compareIds.size >= 3) { e.target.checked = false; toast("Select up to 3 rooms", "error"); return; }
+        compareIds.add(id);
+      } else compareIds.delete(id);
+      renderSaved();
+    })
+  );
 
   // Tab badge + stats line
   if (els.savedCount) {
@@ -1139,4 +1169,41 @@ function escapeHtml(str) {
 
 function escAttr(str) {
   return escapeHtml(str).replace(/"/g, "&quot;");
+}
+
+
+// ============================================================
+// Saved housing comparison (2–3 rooms)
+// ============================================================
+function renderComparison() {
+  const listings = storageGet("savedListings", []).filter(l => compareIds.has(String(l.id)));
+  if (listings.length < 2) {
+    els.comparePanel.classList.add("hidden");
+    return;
+  }
+  const value = (v) => v === undefined || v === null || String(v).trim() === "" ? "—" : escapeHtml(String(v));
+  const photoRow = listings.map(l => {
+    const src = l.images?.[0];
+    return `<td>${src ? `<img class="compare-photo" src="${escAttr(src)}" alt="Saved room photo" />` : '<span class="hint">No photo</span>'}</td>`;
+  }).join("");
+  const rows = [
+    ["Monthly rent", "price"],
+    ["Deposit", "deposit"],
+    ["Location", "location"],
+    ["Distance from MFU", "distanceText"],
+    ["Availability", "availability"],
+    ["Contact", "contactPhone"]
+  ];
+  els.compareContent.innerHTML = `<table class="compare-table">
+    <thead><tr><th scope="col">Feature</th>${listings.map((l, i) => `<th scope="col">Room ${i + 1}<button type="button" class="compare-remove" data-compare-remove="${escAttr(String(l.id))}" aria-label="Remove room ${i + 1}">×</button></th>`).join("")}</tr></thead>
+    <tbody><tr><th scope="row">Photo</th>${photoRow}</tr>
+    ${rows.map(([label, key]) => `<tr><th scope="row">${label}</th>${listings.map(l => `<td>${value(l[key])}</td>`).join("")}</tr>`).join("")}
+    <tr><th scope="row">Original post</th>${listings.map(l => `<td>${/^https?:\/\//i.test(l.sourceLink || "") ? `<a href="${escAttr(l.sourceLink)}" target="_blank" rel="noopener noreferrer">View post</a>` : "—"}</td>`).join("")}</tr>
+    </tbody></table>`;
+  els.compareContent.querySelectorAll("[data-compare-remove]").forEach(button =>
+    button.addEventListener("click", () => {
+      compareIds.delete(button.dataset.compareRemove);
+      renderSaved();
+    })
+  );
 }
