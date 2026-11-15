@@ -239,8 +239,8 @@ on an unmerged branch, and a README that says what it is, who built it and how t
 | Kaung Satt Thiha | 6931503006 | `@Kennethkaungsatt` (`kennethape` is the same account) | **11** | +5,965 / −345 | 33 | Web prototype, popup redesign, photo tray, docs, slides |
 | Munir Sama | 6931503063 | `@mun2ddd` | **27** (incl. 1 merge) | +3,903 / −3,427 | 14 | Extractor logic, tests, source-link, cleanup, PR #2 |
 | Nipitpon Seehawong | 6931503109 | `@thxbe` | **5** | +16 / −5 | 4 | Content-script button, popup labels, photo storage error handling |
-| Min Thant Maung Maung | 6931503012 | `@Skai-max67` | **0** | — | — | — |
-| Kanokporn Pakchaipoom | 6931503020 | `@MelleM686` | **0** | — | — | — |
+| Min Thant Maung Maung | 6931503012 | `@Skai-max67` | **2** (both merged via PR #3, #4) | +175 / −3 | 3 | Room comparison + price comparison in the Saved tab (prototype) |
+| Kanokporn Pakchaipoom | 6931503020 | `@MelleM686` | **3** | +120 / −0 | 1 | Thai copy review of the landlord reply, with proposed wording |
 
 ```bash
 git shortlog -sne --all        # 4 identities (3 people; two are the same account)
@@ -281,18 +281,50 @@ git log --oneline main..origin/fix-ui-text
 - **Can answer:** how the in-page button is placed, why the mouseup guard is needed, what
   happens when storage is full, and why unmerged branch work does not count as delivered.
 
-### Min Thant Maung Maung · Kanokporn Pakchaipoom — **accounts linked, still no commits**
-Both handles are now in the README (`@Skai-max67`, `@MelleM686`), but the git history still
-shows no commits for either name — an account being listed is not the same as a contribution.
-That is a real risk in a review that matches work by account, so fix it deliberately:
-- Give each one a **visible, committed** task before 16 Nov. Safe options: run the manual
-  acceptance script and commit `docs/acceptance-results.md`; record the NFR-3 timed test with
-  3 first-time users; time NFR-1 over 3 trials and commit the numbers; own the Thai copy of
-  the reply templates.
-- If asked in the oral: they should describe **non-code work they actually did** (interviews —
-  the charter records three user interviews dated 26–27 Aug — testing, translation review,
-  slides). Do not claim code that is not in the history; one honest sentence beats a story
-  that collapses under a `git log` check.
+### Min Thant Maung Maung — `@Skai-max67`
+
+- **Room comparison (PR #3, `8fe7162`, 15 Nov)** — added a comparison system to the
+  **Saved** tab: each saved listing gets a **Compare room** checkbox, a
+  `⚖ Compare selected (N)` button in the toolbar stays disabled until two rooms are
+  ticked, and the panel shows the selected rooms side by side. Capped at three rooms
+  (a fourth tick is refused with "Select up to 3 rooms"), with a per-column remove
+  and **Clear selection**. Selections are pruned automatically when a saved listing
+  is deleted.
+- **Smart price comparison (PR #4, `885404b`, 15 Nov)** — filled that panel with a
+  real comparison table: one column per room (plus photo), one row per attribute,
+  the cheapest column marked **Lowest rent**, the other columns showing the monthly
+  difference (`+฿X/month`), and a price-insight line above the table.
+- Scope: the **web prototype only** (`prototype/index.html`, `script.js`,
+  `style.css`) — +175 / −3 lines across 3 files, two commits, both merged to `main`
+  through pull requests rather than pushed directly.
+- Verified after the merge: `node --check` on the shipped script passes and the
+  extractor suite is still **11/11**, so extraction behaviour is unchanged.
+- **Can answer:** why comparison is capped at three rooms, how the cheapest column
+  is decided, what happens when a compared listing is deleted, and why the feature
+  exists in the prototype and not in the extension.
+
+### Kanokporn Pakchaipoom — `@MelleM686`
+
+- **Thai copy review of the landlord reply (`docs/thai-copy-review.md`, 15 Nov)** —
+  ran **Ask the landlord** with all five questions ticked, captured the Thai the app
+  actually produced, and reviewed it as a Thai speaker. This is the one piece of Thai
+  in the product that reaches a real person, and it had never been reviewed.
+- Found every one of the five generated lines reads like a translation rather than a
+  message: the politeness particles (ค่ะ/ครับ, คะ) are missing, `เงินมัดจำต่อรองได้หรือไม่?`
+  reads like a **demand** rather than a question, and the utilities and
+  international-student questions are too long and too formal for a first DM. She
+  wrote a natural alternative for each.
+- Recorded five structural problems the translation cannot fix: the five lines arrive
+  as one message with no greeting, no self-introduction and no sign-off; five
+  questions at once invites a landlord to answer only the first; and the app cannot
+  know the sender's gender, so it cannot choose the right particle.
+- Reviewed the demo posts too: post 1 is natural; post 2's `เฟอร์นิเจอร์ครบ ใหม่เอี่ยม`
+  is awkward and should read `เฟอร์นิเจอร์ครบครัน ใหม่ทุกชิ้น`.
+- Checked the extractor keyword list and reported **no** missing words — correct,
+  since those are parser vocabulary, not copy.
+- **Can answer:** why each of the five lines needed rewording, why the missing
+  ค่ะ/ครับ matters to a landlord, why five questions in one message is a problem, and
+  what she would change in the flow first.
 
 ---
 
