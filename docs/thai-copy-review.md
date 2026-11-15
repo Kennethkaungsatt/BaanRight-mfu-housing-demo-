@@ -1,6 +1,6 @@
 # Thai copy review — the message a student sends to a landlord
 
-**Status:** not yet run. This file is the record sheet; it is empty on purpose.
+**Status:** completed 15 Nov 2026 — all five questions reviewed, five flow problems recorded
 **Reviewer:** Kanokporn Pakchaipoom (`@MelleM686`)
 **Date:** 15 / 11 / 2026
 **What is being reviewed:** the Thai text produced by **Ask the landlord** (FR-4) — the one piece of Thai in the product that leaves the app and reaches a real person. A wrong register here costs a student a room.
