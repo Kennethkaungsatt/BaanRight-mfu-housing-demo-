@@ -259,6 +259,7 @@
                 <input type="checkbox" id="shortlistOnly" />
                 <span>&#9733; Shortlist</span>
               </label>
+              <button id="compareSelectedBtn" class="mini-btn compare-launch" disabled>⚖ Compare selected (0)</button>
               <button id="exportBtn" class="mini-btn" title="Export saved listings as CSV">&#11015; Export CSV</button>
             </div>
             <p id="savedStats" class="hint saved-stats"></p>
@@ -269,6 +270,13 @@
               <p class="hint">Translate a post and tap &ldquo;Save listing&rdquo; &mdash; price, distance and photos come with it.</p>
             </div>
             <ul id="savedList" class="saved-list"></ul>
+            <section id="comparePanel" class="compare-panel hidden" aria-live="polite">
+              <div class="compare-panel-head">
+                <div><p class="compare-kicker">ROOM COMPARISON</p><h3>Compare your selected rooms</h3><p class="hint">Compare up to three saved listings side by side.</p></div>
+                <button id="clearCompareBtn" class="chip-btn">Clear selection</button>
+              </div>
+              <div id="compareContent" class="compare-scroll"></div>
+            </section>
             <p id="noMatches" class="empty-state hidden">
               <span class="empty-emoji">&#128269;</span><br />
               Nothing matches that search.
