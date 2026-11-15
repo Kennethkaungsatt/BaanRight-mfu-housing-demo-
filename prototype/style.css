@@ -901,3 +901,50 @@ input::placeholder, textarea::placeholder { color: var(--ink-soft); opacity: .75
 .compare-remove { margin-left: 8px; background: transparent; border: 0; cursor: pointer; color: inherit; font-size: 1.3rem; }
 [data-theme="dark"] .compare-table thead th { background: #174638; color: #e6fff1; }
 @media (max-width: 600px) { .compare-panel { padding: 12px; } .compare-panel-head { flex-direction: column; } }
+
+
+/* Smart price comparison insight */
+.compare-price-insight {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 0 0 14px;
+  padding: 13px 16px;
+  border: 1px solid #a7dfbd;
+  border-radius: 12px;
+  background: #effaf3;
+  color: #14532d;
+}
+.compare-price-insight strong { font-weight: 750; }
+.compare-price-insight span { font-size: .92rem; }
+.compare-best-badge {
+  display: block;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: .72rem;
+  font-weight: 700;
+}
+.compare-table td.compare-best-price {
+  background: #effaf3;
+  color: #166534;
+  font-weight: 700;
+}
+[data-theme="dark"] .compare-price-insight {
+  border-color: #276749;
+  background: #123526;
+  color: #d1fae5;
+}
+[data-theme="dark"] .compare-best-badge {
+  background: #174638;
+  color: #d1fae5;
+}
+[data-theme="dark"] .compare-table td.compare-best-price {
+  background: #123526;
+  color: #d1fae5;
+}
